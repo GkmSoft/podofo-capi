@@ -1066,7 +1066,7 @@
             </method>
             <method name="DebugEnabled" return="bool"/>
         </class>
-        <class name="PdfFileStrPdfFileStreameam" lifecycle="copy_semantic" implementation_class_name="PoDoFo::PdfFileStrPdfFileStreameam" implementation_class_header="PoDoFo/base/PdfFileStream.h" base="PoDoFo::PdfStream" >
+        <class name="PdfFileStream" lifecycle="copy_semantic" implementation_class_name="PoDoFo::PdfFileStream" implementation_class_header="PoDoFo/base/PdfFileStream.h" base="PoDoFo::PdfStream" >
             <constructor name="Default">
                 <argument name="pParent" type="PoDoFo::PdfObject"/>
                 <argument name="pDevice" type="PoDoFo::PdfOutputDevice"/>

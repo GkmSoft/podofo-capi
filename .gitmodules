@@ -1,0 +1,3 @@
+[submodule "bcapi"]
+	path = bcapi
+	url = https://github.com/PetrPPetrov/beautiful-capi.git
