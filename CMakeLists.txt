@@ -57,10 +57,10 @@ add_library(podofo_capi SHARED
 
 target_link_libraries(podofo_capi debug ${PODOFO_LIBRARY_DEBUG} optimized ${PODOFO_LIBRARY_RELEASE})
 
-find_file(BCAPI_SCRIPT Capi.py PATHS  ${podofo_capi_SOURCE_DIR}/bcapi/source/ NO_DEFAULT_PATH)
+find_file(BCAPI_SCRIPT Capi.py PATHS ${podofo_capi_SOURCE_DIR}/bcapi/source/ NO_DEFAULT_PATH)
 
 if(NOT BCAPI_SCRIPT)
-  message(FATAL_ERROR "No beautiful-capi component found. Please update git submodules.")
+  message(FATAL_ERROR "No beautiful-capi component is found. Please update git submodules.")
 endif()
 
 add_custom_command(
