@@ -38,17 +38,42 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(PythonInterp 3.4 REQUIRED)
 
+set(CMAKE_CXX_STANDARD 11)
+
+add_definitions(-DPODOFO_HAVE_OPENSSL)
+
 set(PODOFO_INCLUDE_DIR "" CACHE PATH "Include directory for PoDoFo library")
 set(PODOFO_LIBRARY_DEBUG "" CACHE FILEPATH "Path to PoDoFo debug library")
 set(PODOFO_LIBRARY_RELEASE "" CACHE FILEPATH "Path to PoDoFo release library")
 
-if(NOT PODOFO_INCLUDE_DIR OR NOT PODOFO_LIBRARY_DEBUG OR NOT PODOFO_LIBRARY_RELEASE)
+set(FREETYPE_INCLUDE_DIR "" CACHE PATH "Include directory for Freetype library")
+set(FREETYPE_LIBRARY_RELEASE "" CACHE FILEPATH "Path to Freetype release library")
+
+set(PNG_INCLUDE_DIR "" CACHE PATH "Include directory for Png library")
+set(PNG_LIBRARY_RELEASE "" CACHE FILEPATH "Path to Png release library")
+
+set(Z_INCLUDE_DIR "" CACHE PATH "Include directory for Z library")
+set(Z_LIBRARY_RELEASE "" CACHE FILEPATH "Path to Z release library")
+
+set(XML2_INCLUDE_DIR "" CACHE PATH "Include directory for XML library")
+set(XML2_LIBRARY_RELEASE "" CACHE FILEPATH "Path to XML release library")
+
+set(FONTCONFIG_INCLUDE_DIR "" CACHE PATH "Include directory for Fontconfig library")
+set(FONTCONFIG_LIBRARY_RELEASE "" CACHE FILEPATH "Path to Fontconfig release library")
+
+set(OPENSSL_INCLUDE_DIR "" CACHE PATH "Include directory for openssl library")
+set(OPENSSL_LIBRARY_RELEASE "" CACHE FILEPATH "Path to openssl release library")
+
+if(NOT PODOFO_INCLUDE_DIR OR NOT (PODOFO_LIBRARY_DEBUG OR PODOFO_LIBRARY_RELEASE))
   message(FATAL_ERROR "PoDoFo library is not found. Please specify exact pathes to PoDoFo library.")
 endif()
 
 include_directories(
   ${podofo_capi_SOURCE_DIR}/src/
   ${PODOFO_INCLUDE_DIR}
+  ${FREETYPE_INCLUDE_DIR}
+  ${PNG_INCLUDE_DIR}
+  ${OPENSSL_INCLUDE_DIR}  
 )
 
 add_library(podofo_capi SHARED
@@ -56,6 +81,12 @@ add_library(podofo_capi SHARED
 )
 
 target_link_libraries(podofo_capi debug ${PODOFO_LIBRARY_DEBUG} optimized ${PODOFO_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${FREETYPE_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${PNG_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${FONTCONFIG_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${Z_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${XML2_LIBRARY_RELEASE})
+target_link_libraries(podofo_capi optimized ${OPENSSL_LIBRARY_RELEASE})
 
 find_file(BCAPI_SCRIPT Capi.py PATHS ${podofo_capi_SOURCE_DIR}/bcapi/source/ NO_DEFAULT_PATH)
 
@@ -77,7 +108,7 @@ add_custom_command(
   MAIN_DEPENDENCY
     ${podofo_capi_SOURCE_DIR}/src/podofo.xml
   DEPENDS
-    ${podofo_capi_SOURCE_DIR}/podofo_params.xml
+    ${podofo_capi_SOURCE_DIR}/src/podofo_params.xml
   WORKING_DIRECTORY
     ${podofo_capi_SOURCE_DIR}/bcapi/source/
 )

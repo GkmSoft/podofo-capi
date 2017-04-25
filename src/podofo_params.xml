@@ -34,7 +34,7 @@
  # files in the program, then also delete it here.
  #
 -->
-<params:params xmlns:params="http://gkmsoft.ru/beautifulcapi-params">
+<params:params xmlns:params="http://gkmsoft.ru/beautifulcapi-params" warn_when_builtin_type_used="true">
   <copyright_header>/***************************************************************************
  *   Copyright (C) 2006 by Dominik Seichter                                *
  *   domseichter@web.de                                                    *
