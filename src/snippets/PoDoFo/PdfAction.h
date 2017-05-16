@@ -44,7 +44,7 @@
 
 
 virtual ~PdfAction() {}
-virtual  HasScript() const = 0;
+virtual bool HasScript() const = 0;
 virtual PoDoFo::EPdfAction GetType() const = 0;
 virtual void AddToDictionary(PoDoFo::PdfDictionary dictionary) const = 0;
 virtual PoDoFo::PdfString GetURI() const = 0;

@@ -30,30 +30,94 @@
  *   version.  If you delete this exception statement from all source      *
  *   files in the program, then also delete it here.                       *
  ***************************************************************************/
+
 #include <vector>
+
+#include "boost/shared_ptr.hpp"
+#include "boost/make_shared.hpp"
 
 namespace Bcapi{
     
-    template <class T>
+    template < template <class T> class Ptr> 
     class Vector
     {
-        std::vector<T> mVector;
+        std::vector<Ptr<class T> > mVector;
     public:
+        Vector(std::vector<class Ptr<class T> >&& std_vector)
+        {
+            mVector = std_vector;  
+        }
+
+        Vector(std::vector<class Ptr<class T>*>&& std_vector)
+        {
+            mVector = new std::vector<boost::shared_ptr<class T> >;
+            for (auto it = (*std_vector).begin(); it != (*std_vector).end(); it++)
+                mVector.insert(boost::shared_ptr<class T>(boost::make_shared<class T>(*it))); 
+        }
+
+        Vector(std::vector<class Ptr<class T*>*>&& std_vector)
+        {
+            mVector = new std::vector<boost::shared_ptr<class T> >;
+            for (auto it = (*std_vector).begin(); it != (*std_vector).end(); it++)
+                mVector.insert(boost::shared_ptr<class T>(boost::make_shared<class T>(**it))); 
+        }
+
+        size_t GetSize() const
+        {
+            return mVector.size();
+        }
+
+        std::vector<class T>& GetStdVector()
+        {
+            std::vector<class T>* std_vector = new std::vector<class T>;
+            for (auto it = mVector.begin(); it != mVector.end(); it++)            
+                std_vector->insert((*it)->get());          
+            return *std_vector;
+        }
+
+        template <class T> 
         Vector(std::vector<T>&& std_vector)
         {
-            mVector = std_vector;
+            mVector = new std::vector<boost::shared_ptr<T> >;
+            for (auto it = std_vector.begin(); it != std_vector.end(); it++)
+                std_vector.insert(boost::shared_ptr<T>(boost::make_shared<T>(*it)));   
+        }
+
+        template <class T> 
+        Vector(std::vector<T*>&& std_vector)
+        {
+            mVector = new std::vector<boost::shared_ptr<T> >;
+            for (auto it = std_vector.begin(); it != std_vector.end(); it++)
+                std_vector.insert(boost::shared_ptr<T>(boost::make_shared<T>(*it)));   
+        }
+    };
+    
+    /*
+    template <typename Object> 
+    class Vector
+    {
+        std::vector<boost::shared_ptr<Object> > mVector;
+    public:
+        Vector(std::vector<Object>&& std_vector)
+        {
+            mVector = new std::vector<boost::shared_ptr<Object> >;
+            for (auto it = std_vector.begin(); it != std_vector.end(); it++)
+                if (!std::is_same(<boost::shared_ptr<typename>, *it>::value))
+            std_vector.insert(boost::shared_ptr<Object>(boost::make_shared<Object>(*it)));   
         }
         
         size_t GetSize() const
         {
             return mVector.size();
         }
-        
-        std::vector<T>& GetStdVector()
+
+        std::vector<Object>&& GetStdVector()
         {
-            return mVector;
+            std::vector<Object> result;
+            for (auto it = mVector.begin(); it != mVector.end(); it++)            
+                result.insert((*it)->get());          
+            return result;
         }
-        
    };
-    
+    */
 }

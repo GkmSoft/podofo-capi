@@ -45,7 +45,7 @@
 
 virtual ~PdfDataType() {}
 virtual void Write(PoDoFo::PdfOutputDevice* pDevice, PoDoFo::EPdfWriteMode eWriteMode, PoDoFo::PdfEncrypt* pEncrypt) = 0;
-virtual  IsDirty() const = 0;
-virtual void SetDirty( bDirty) = 0;
-virtual  GetImmutable() const = 0;
-virtual void SetImmutable( immutable) = 0;
+virtual bool IsDirty() const = 0;
+virtual void SetDirty(bool bDirty) = 0;
+virtual bool GetImmutable() const = 0;
+virtual void SetImmutable(bool immutable) = 0;

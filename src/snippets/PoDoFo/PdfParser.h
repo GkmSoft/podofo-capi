@@ -44,26 +44,26 @@
 
 
 virtual ~PdfParser() {}
-virtual void ParseFile( pszFileName,  bLoadOnDemand) = 0;
-virtual void ParseFile( pszFileName,  lLen,  bLoadOnDemand) = 0;
-virtual void ParseFile(PoDoFo::PdfRefCountedInputDevice rDevice,  bLoadOnDemand) = 0;
-virtual  QuickEncryptedCheck( pszFilename) = 0;
-virtual  GetNumberOfIncrementalUpdates() const = 0;
+virtual void ParseFile(const char* pszFileName, bool bLoadOnDemand) = 0;
+virtual void ParseFile(const char* pszFileName, long lLen, bool bLoadOnDemand) = 0;
+virtual void ParseFile(PoDoFo::PdfRefCountedInputDevice rDevice, bool bLoadOnDemand) = 0;
+virtual bool QuickEncryptedCheck(const char* pszFilename) = 0;
+virtual int GetNumberOfIncrementalUpdates() const = 0;
 virtual PoDoFo::PdfVecObjects* GetObjects() const = 0;
 virtual PoDoFo::EPdfVersion GetPdfVersion() const = 0;
-virtual  GetPdfVersionString() const = 0;
+virtual const char* GetPdfVersionString() const = 0;
 virtual PoDoFo::PdfObject* GetTrailer() const = 0;
-virtual  GetLoadOnDemand() const = 0;
-virtual  IsLinearized() const = 0;
-virtual  GetFileSize() const = 0;
+virtual bool GetLoadOnDemand() const = 0;
+virtual bool IsLinearized() const = 0;
+virtual size_t GetFileSize() const = 0;
 virtual PoDoFo::PdfEncrypt* GetEncrypt() const = 0;
 virtual PoDoFo::PdfEncrypt* TakeEncrypt() = 0;
-virtual void SetPassword( sPassword) = 0;
-virtual  IsStrictParsing() const = 0;
-virtual void SetStrictParsing( bStrict) = 0;
-virtual  GetXRefOffset() = 0;
-virtual  HasXRefStream() = 0;
-virtual  GetIgnoreBrokenObjects() = 0;
-virtual void SetIgnoreBrokenObjects( ignore_broken_objects) = 0;
-virtual  GetMaxObjectCount() const = 0;
-virtual void SetMaxObjectCount( max_object_count) = 0;
+virtual void SetPassword(const char* sPassword) = 0;
+virtual bool IsStrictParsing() const = 0;
+virtual void SetStrictParsing(bool bStrict) = 0;
+virtual PoDoFo::pdf_long GetXRefOffset() = 0;
+virtual bool HasXRefStream() = 0;
+virtual bool GetIgnoreBrokenObjects() = 0;
+virtual void SetIgnoreBrokenObjects(bool ignore_broken_objects) = 0;
+virtual long GetMaxObjectCount() const = 0;
+virtual void SetMaxObjectCount(long max_object_count) = 0;

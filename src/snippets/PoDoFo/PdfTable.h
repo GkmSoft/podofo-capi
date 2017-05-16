@@ -44,16 +44,16 @@
 
 
 virtual ~PdfTable() {}
-virtual void Draw( dX,  dY, PoDoFo::PdfPainter* pPainter, PoDoFo::PdfRect rClipRect,  pdLastX,  pdLastY) = 0;
-virtual void GetWidth( dX,  dY, PoDoFo::PdfCanvas* pPage) = 0;
-virtual void GetHeight( dX,  dY, PoDoFo::PdfCanvas* pPage) = 0;
-virtual void SetColumnWidths( pdWidths) = 0;
-virtual void SetRowHeights( pdHeights) = 0;
-virtual void SetColumnWidth( dWidth) = 0;
-virtual void SetRowHeight( dHeight) = 0;
-virtual void SetTableWidth( dWidth) = 0;
-virtual void SetTableHeight( dHeight) = 0;
-virtual  GetCols() const = 0;
-virtual  GetRows() const = 0;
+virtual void Draw(double dX, double dY, PoDoFo::PdfPainter* pPainter, PoDoFo::PdfRect rClipRect, double* pdLastX, double* pdLastY) = 0;
+virtual void GetWidth(double dX, double dY, PoDoFo::PdfCanvas* pPage) = 0;
+virtual void GetHeight(double dX, double dY, PoDoFo::PdfCanvas* pPage) = 0;
+virtual void SetColumnWidths(double* pdWidths) = 0;
+virtual void SetRowHeights(double* pdHeights) = 0;
+virtual void SetColumnWidth(double dWidth) = 0;
+virtual void SetRowHeight(double dHeight) = 0;
+virtual void SetTableWidth(double dWidth) = 0;
+virtual void SetTableHeight(double dHeight) = 0;
+virtual int GetCols() const = 0;
+virtual int GetRows() const = 0;
 virtual PoDoFo::PdfTableModel* GetModel() const = 0;
 virtual void SetModel(PoDoFo::PdfTableModel* model) = 0;

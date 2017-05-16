@@ -54,8 +54,8 @@ virtual ~PdfCMapEncoding() {}
 virtual PoDoFo::PdfString ConvertToUnicode(PoDoFo::PdfString rEncodedString, PoDoFo::PdfFont* pFont) const = 0;
 virtual void AddToDictionary(PoDoFo::PdfDictionary rDictionary) const = 0;
 virtual PoDoFo::PdfRefCountedBuffer ConvertToEncoding(PoDoFo::PdfString rString, PoDoFo::PdfFont* pFont) const = 0;
-virtual  IsAutoDelete() const = 0;
-virtual  IsSingleByteEncoding() const = 0;
-virtual  GetCharCode( nIndex) const = 0;
+virtual bool IsAutoDelete() const = 0;
+virtual bool IsSingleByteEncoding() const = 0;
+virtual PoDoFo::pdf_utf16be GetCharCode(int nIndex) const = 0;
 virtual PoDoFo::PdfName GetID() const = 0;
 virtual PoDoFo::PdfEncoding* GetBaseEncoding() const = 0;

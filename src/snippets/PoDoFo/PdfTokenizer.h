@@ -44,12 +44,12 @@
 
 
 virtual ~PdfTokenizer() {}
-virtual  GetNextToken( pszToken,  peType) = 0;
-virtual  IsNextToken( pszToken) = 0;
-virtual  GetNextNumber() = 0;
+virtual bool GetNextToken(const char*& pszToken, PoDoFo::EPdfTokenType* peType) = 0;
+virtual bool IsNextToken(const char* pszToken) = 0;
+virtual PoDoFo::pdf_long GetNextNumber() = 0;
 virtual void GetNextVariant(PoDoFo::PdfVariant rVariant, PoDoFo::PdfEncrypt* pEncrypt) = 0;
-virtual  IsWhitespace( ch) = 0;
-virtual  IsDelimiter( ch) = 0;
-virtual  IsRegular( ch) = 0;
-virtual  IsPrintable( ch) = 0;
-virtual  GetHexValue( ch) = 0;
+virtual bool IsWhitespace(const unsigned char ch) = 0;
+virtual bool IsDelimiter(const unsigned char ch) = 0;
+virtual bool IsRegular(const unsigned char ch) = 0;
+virtual bool IsPrintable(const unsigned char ch) = 0;
+virtual int GetHexValue(const unsigned char ch) = 0;

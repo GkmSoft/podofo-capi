@@ -44,27 +44,27 @@
 
 
 virtual ~PdfFont() {}
-virtual  IsBold() const = 0;
-virtual  IsItalic() const = 0;
-virtual void SetStrikeOut( bStrikeOut) = 0;
-virtual  IsStrikeOut() const = 0;
+virtual bool IsBold() const = 0;
+virtual bool IsItalic() const = 0;
+virtual void SetStrikeOut(bool bStrikeOut) = 0;
+virtual bool IsStrikeOut() const = 0;
 virtual PoDoFo::PdfName GetIdentifier() const = 0;
 virtual PoDoFo::PdfEncoding* GetEncoding() const = 0;
 virtual PoDoFo::PdfFontMetrics* GetFontMetrics() const = 0;
 virtual PoDoFo::PdfFontMetrics* GetFontMetrics2() = 0;
 virtual void WriteStringToStream(PoDoFo::PdfString rsString, PoDoFo::PdfStream* pStream) = 0;
 virtual void EmbedFont() = 0;
-virtual void AddUsedSubsettingGlyphs(PoDoFo::PdfString sText,  lStringLen) = 0;
+virtual void AddUsedSubsettingGlyphs(PoDoFo::PdfString sText, long lStringLen) = 0;
 virtual void WriteStringToStream(PoDoFo::PdfString pszGlyphName, PoDoFo::PdfStream* pStream) = 0;
 virtual void EmbedSubsetFont() = 0;
-virtual  IsSubsetting() const = 0;
-virtual  GetFontSize() const = 0;
-virtual void SetFontSize( font_size) = 0;
-virtual  GetFontScale() const = 0;
-virtual void SetFontScale( font_scale) = 0;
-virtual  GetFontCharSpace() const = 0;
-virtual void SetFontCharSpace( font_char_space) = 0;
-virtual  GetWordSpace() const = 0;
-virtual void SetWordSpace( word_space) = 0;
-virtual  IsUnderlined() const = 0;
-virtual void SetUnderlined( underlined) = 0;
+virtual bool IsSubsetting() const = 0;
+virtual float GetFontSize() const = 0;
+virtual void SetFontSize(float font_size) = 0;
+virtual float GetFontScale() const = 0;
+virtual void SetFontScale(float font_scale) = 0;
+virtual float GetFontCharSpace() const = 0;
+virtual void SetFontCharSpace(float font_char_space) = 0;
+virtual float GetWordSpace() const = 0;
+virtual void SetWordSpace(float word_space) = 0;
+virtual bool IsUnderlined() const = 0;
+virtual void SetUnderlined(bool underlined) = 0;

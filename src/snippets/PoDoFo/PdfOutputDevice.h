@@ -44,10 +44,10 @@
 
 
 virtual ~PdfOutputDevice() {}
-virtual  GetLength() const = 0;
-virtual void Print( pszFormat) = 0;
-virtual void Write( pBuffer,  lLen) = 0;
-virtual  Read( pBuffer,  lLen) = 0;
-virtual void Seek( offset) = 0;
-virtual  Tell() const = 0;
+virtual size_t GetLength() const = 0;
+virtual void Print(const char* pszFormat) = 0;
+virtual void Write(char* pBuffer, size_t lLen) = 0;
+virtual size_t Read(char* pBuffer, size_t lLen) = 0;
+virtual void Seek(size_t offset) = 0;
+virtual size_t Tell() const = 0;
 virtual void Flush() = 0;

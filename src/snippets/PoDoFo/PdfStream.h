@@ -45,21 +45,21 @@
 
 virtual ~PdfStream() {}
 virtual void Write(PoDoFo::PdfOutputDevice* pDevice, PoDoFo::PdfEncrypt* pEncrypt) = 0;
-virtual void Set( szBuffer,  lLen, PoDoFo::TVecFilters vecFilters) = 0;
-virtual void Set( szBuffer,  lLen) = 0;
+virtual void Set(const char* szBuffer, PoDoFo::pdf_long lLen, PoDoFo::TVecFilters vecFilters) = 0;
+virtual void Set(const char* szBuffer, PoDoFo::pdf_long lLen) = 0;
 virtual void Set(PoDoFo::PdfInputStream* pStream) = 0;
 virtual void Set(PoDoFo::PdfInputStream* pStream, PoDoFo::TVecFilters vecFilters) = 0;
-virtual void Set( pszString) = 0;
-virtual void SetRawData(PoDoFo::PdfInputStream* pStream,  lLen) = 0;
-virtual void BeginAppend( bClearExisting) = 0;
-virtual void BeginAppend(PoDoFo::TVecFilters vecFilters,  bClearExisting,  bDeleteExisting) = 0;
-virtual void Append( pszString,  lLen) = 0;
-virtual void Append( pszString) = 0;
-virtual void Append( sString) = 0;
+virtual void Set(const char* pszString) = 0;
+virtual void SetRawData(PoDoFo::PdfInputStream* pStream, PoDoFo::pdf_long lLen) = 0;
+virtual void BeginAppend(bool bClearExisting) = 0;
+virtual void BeginAppend(PoDoFo::TVecFilters vecFilters, bool bClearExisting, bool bDeleteExisting) = 0;
+virtual void Append(const char* pszString, size_t lLen) = 0;
+virtual void Append(const char* pszString) = 0;
+virtual void Append(const char*& sString) = 0;
 virtual void EndAppend() = 0;
-virtual  IsAppending() const = 0;
-virtual  GetLength() const = 0;
-virtual void GetCopy( pBuffer, Bcapi::PdfLong lLen) const = 0;
+virtual bool IsAppending() const = 0;
+virtual PoDoFo::pdf_long GetLength() const = 0;
+virtual void GetCopy(char** pBuffer, Bcapi::PdfLongImpl lLen) const = 0;
 virtual void GetCopy(PoDoFo::PdfOutputStream* pStream) const = 0;
-virtual void GetFilteredCopy( pBuffer, Bcapi::PdfLong lLen) const = 0;
+virtual void GetFilteredCopy(char** pBuffer, Bcapi::PdfLongImpl lLen) const = 0;
 virtual void GetFilteredCopy(PoDoFo::PdfOutputStream* pStream) const = 0;

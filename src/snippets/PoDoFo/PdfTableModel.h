@@ -44,16 +44,16 @@
 
 
 virtual ~PdfTableModel() {}
-virtual PoDoFo::PdfString GetText( col,  row) const = 0;
-virtual PoDoFo::EPdfAlignment GetAlignment( col,  row) const = 0;
-virtual PoDoFo::EPdfVerticalAlignment GetVerticalAlignment( col,  row) const = 0;
-virtual PoDoFo::PdfFont* GetFont( col,  row) const = 0;
-virtual  HasBackgroundColor( col,  row) const = 0;
-virtual PoDoFo::PdfColor GetBackgroundColor( col,  row) const = 0;
-virtual PoDoFo::PdfColor GetForegroundColor( col,  row) const = 0;
-virtual  HasWordWrap( col,  row) const = 0;
-virtual  HasBorders() const = 0;
-virtual  GetBorderWidth() const = 0;
-virtual PoDoFo::PdfColor GetBorderColor( col,  row) const = 0;
-virtual  HasImage( col,  row) const = 0;
-virtual PoDoFo::PdfImage* GetImage( col,  row) const = 0;
+virtual PoDoFo::PdfString GetText(int col, int row) const = 0;
+virtual PoDoFo::EPdfAlignment GetAlignment(int col, int row) const = 0;
+virtual PoDoFo::EPdfVerticalAlignment GetVerticalAlignment(int col, int row) const = 0;
+virtual PoDoFo::PdfFont* GetFont(int col, int row) const = 0;
+virtual bool HasBackgroundColor(int col, int row) const = 0;
+virtual PoDoFo::PdfColor GetBackgroundColor(int col, int row) const = 0;
+virtual PoDoFo::PdfColor GetForegroundColor(int col, int row) const = 0;
+virtual bool HasWordWrap(int col, int row) const = 0;
+virtual bool HasBorders() const = 0;
+virtual double GetBorderWidth() const = 0;
+virtual PoDoFo::PdfColor GetBorderColor(int col, int row) const = 0;
+virtual bool HasImage(int col, int row) const = 0;
+virtual PoDoFo::PdfImage* GetImage(int col, int row) const = 0;

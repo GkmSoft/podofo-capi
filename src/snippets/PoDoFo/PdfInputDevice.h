@@ -45,12 +45,12 @@
 
 virtual ~PdfInputDevice() {}
 virtual void Close() = 0;
-virtual  Tell() const = 0;
-virtual  GetChar() const = 0;
-virtual  Look() const = 0;
-virtual void Seek( off,  dir) = 0;
-virtual  Read( pBuffer,  lLen) = 0;
-virtual  Eof() const = 0;
-virtual  Bad() const = 0;
-virtual void Clear( state) const = 0;
-virtual  IsSeekable() const = 0;
+virtual std::streamoff Tell() const = 0;
+virtual int GetChar() const = 0;
+virtual int Look() const = 0;
+virtual void Seek(std::streamoff off, std::ios_base::seekdir dir) = 0;
+virtual std::streamoff Read(char* pBuffer, std::streamsize lLen) = 0;
+virtual bool Eof() const = 0;
+virtual bool Bad() const = 0;
+virtual void Clear(std::ios_base::iostate state) const = 0;
+virtual bool IsSeekable() const = 0;

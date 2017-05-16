@@ -44,15 +44,15 @@
 
 
 virtual ~PdfFilter() {}
-virtual  CanEncode() const = 0;
-virtual void Encode( pInBuffer,  lInLen,  ppOutBuffer, Bcapi::PdfLong plOutLen) const = 0;
+virtual bool CanEncode() const = 0;
+virtual void Encode(const char* pInBuffer, PoDoFo::pdf_long lInLen, char** ppOutBuffer, Bcapi::PdfLongImpl plOutLen) const = 0;
 virtual void BeginEncode(PoDoFo::PdfOutputStream* pOutput) = 0;
-virtual void EncodeBlock( pBuffer,  lLen) = 0;
+virtual void EncodeBlock(const char* pBuffer, PoDoFo::pdf_long lLen) = 0;
 virtual void EndEncode() = 0;
-virtual  CanDecode() const = 0;
-virtual void Decode( pInBuffer,  lInLen,  ppOutBuffer, Bcapi::PdfLong plOutLen, PoDoFo::PdfDictionary* pDecodeParms) const = 0;
+virtual bool CanDecode() const = 0;
+virtual void Decode(const char* pInBuffer, PoDoFo::pdf_long lInLen, char** ppOutBuffer, Bcapi::PdfLongImpl plOutLen, PoDoFo::PdfDictionary* pDecodeParms) const = 0;
 virtual void BeginDecode(PoDoFo::PdfOutputStream* pOutput, PoDoFo::PdfDictionary* pDecodeParms) = 0;
-virtual void DecodeBlock( pBuffer,  lLen) = 0;
+virtual void DecodeBlock(const char* pBuffer, PoDoFo::pdf_long lLen) = 0;
 virtual void EndEncode() = 0;
 virtual PoDoFo::EPdfFilter GetType() const = 0;
 virtual PoDoFo::PdfOutputStream* GetStream() const = 0;

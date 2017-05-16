@@ -44,10 +44,10 @@
 
 
 virtual ~PdfParserObject() {}
-virtual void ParseFile(PoDoFo::PdfEncrypt* pEncrypt,  bIsTrailer) = 0;
-virtual  HasStreamToParse() const = 0;
-virtual  IsLoadOnDemand() const = 0;
-virtual void SetLoadOnDemand( bDelayed) = 0;
-virtual void SetObjectNumber( nObjNo) = 0;
-virtual void FreeObjectMemory( bForce) = 0;
-virtual  GetOffset() const = 0;
+virtual void ParseFile(PoDoFo::PdfEncrypt* pEncrypt, bool bIsTrailer) = 0;
+virtual bool HasStreamToParse() const = 0;
+virtual bool IsLoadOnDemand() const = 0;
+virtual void SetLoadOnDemand(bool bDelayed) = 0;
+virtual void SetObjectNumber(unsigned nObjNo) = 0;
+virtual void FreeObjectMemory(bool bForce) = 0;
+virtual PoDoFo::pdf_int64 GetOffset() const = 0;

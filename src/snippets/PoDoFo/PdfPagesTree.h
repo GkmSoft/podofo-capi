@@ -44,13 +44,13 @@
 
 
 virtual ~PdfPagesTree() {}
-virtual  GetTotalNumberOfPages() const = 0;
-virtual PoDoFo::PdfPage* GetPage( nIndex) = 0;
+virtual int GetTotalNumberOfPages() const = 0;
+virtual PoDoFo::PdfPage* GetPage(int nIndex) = 0;
 virtual PoDoFo::PdfPage* GetPage(PoDoFo::PdfReference ref) = 0;
-virtual void InsertPage( nAfterPageIndex, PoDoFo::PdfPage* pPage) = 0;
-virtual void InsertPage( nAfterPageIndex, PoDoFo::PdfObject* pPage) = 0;
-virtual PoDoFo::PdfPage* InsertPage(PoDoFo::PdfRect rSize,  atIndex) = 0;
+virtual void InsertPage(int nAfterPageIndex, PoDoFo::PdfPage* pPage) = 0;
+virtual void InsertPage(int nAfterPageIndex, PoDoFo::PdfObject* pPage) = 0;
+virtual PoDoFo::PdfPage* InsertPage(PoDoFo::PdfRect rSize, int atIndex) = 0;
 virtual PoDoFo::PdfPage* CreatePage(PoDoFo::PdfRect rSize) = 0;
 virtual void CreatePages(Bcapi::Vector<PoDoFo::PdfRect> vecSizes) = 0;
-virtual void DeletePage( inPageNumber) = 0;
+virtual void DeletePage(int inPageNumber) = 0;
 virtual void ClearCache() = 0;

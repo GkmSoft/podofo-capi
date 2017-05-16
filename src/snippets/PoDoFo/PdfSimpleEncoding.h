@@ -47,8 +47,8 @@ virtual ~PdfSimpleEncoding() {}
 virtual void AddToDictionary(PoDoFo::PdfDictionary rDictionary) const = 0;
 virtual PoDoFo::PdfString ConvertToUnicode(PoDoFo::PdfString eEncodedString, PoDoFo::PdfFont* pFont) const = 0;
 virtual PoDoFo::PdfRefCountedBuffer ConvertToEncoding(PoDoFo::PdfString rString, PoDoFo::PdfFont* pFont) const = 0;
-virtual  IsAutoDelete() const = 0;
-virtual  IsSingleByteEncoding() const = 0;
+virtual bool IsAutoDelete() const = 0;
+virtual bool IsSingleByteEncoding() const = 0;
 virtual PoDoFo::PdfName GetName() const = 0;
-virtual  GetCharCode( nIndex) const = 0;
-virtual  GetUnicodeCharCode( unicodeValue) const = 0;
+virtual PoDoFo::pdf_utf16be GetCharCode(int nIndex) const = 0;
+virtual char GetUnicodeCharCode(PoDoFo::pdf_utf16be unicodeValue) const = 0;

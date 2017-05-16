@@ -110,10 +110,10 @@ enum EPdfPageMode
 };
 enum EPdfFontFlags
 {
-    ePdfFont_Normal     = 0x00,
-    ePdfFont_Embedded   = 0x01,
-    ePdfFont_Bold       = 0x02,
-    ePdfFont_Italic     = 0x04,
+    ePdfFont_Normal = 0x00,
+    ePdfFont_Embedded = 0x01,
+    ePdfFont_Bold = 0x02,
+    ePdfFont_Italic = 0x04,
     ePdfFont_BoldItalic = ePdfFont_Bold | ePdfFont_Italic,
     ePdfFont_Subsetting = 0x08
 };
@@ -147,27 +147,27 @@ enum EPdfTilingPatternType
 };
 enum EPdfLineCapStyle
 {
-    ePdfLineCapStyle_Butt    = 0,
-    ePdfLineCapStyle_Round   = 1,
-    ePdfLineCapStyle_Square  = 2
+    ePdfLineCapStyle_Butt = 0,
+    ePdfLineCapStyle_Round = 1,
+    ePdfLineCapStyle_Square = 2
 };
 enum EPdfLineJoinStyle
 {
-    ePdfLineJoinStyle_Miter   = 0,
-    ePdfLineJoinStyle_Round   = 1,
-    ePdfLineJoinStyle_Bevel   = 2
+    ePdfLineJoinStyle_Miter = 0,
+    ePdfLineJoinStyle_Round = 1,
+    ePdfLineJoinStyle_Bevel = 2
 };
 enum EPdfVerticalAlignment
 {
-    ePdfVerticalAlignment_Top    = 0,
+    ePdfVerticalAlignment_Top = 0,
     ePdfVerticalAlignment_Center = 1,
-    ePdfVerticalAlignment_Bottom  = 2
+    ePdfVerticalAlignment_Bottom = 2
 };
 enum EPdfAlignment
 {
-    ePdfAlignment_Left    = 0,
-    ePdfAlignment_Center  = 1,
-    ePdfAlignment_Right   = 2
+    ePdfAlignment_Left = 0,
+    ePdfAlignment_Center = 1,
+    ePdfAlignment_Right = 2
 };
 enum EPdfTokenType
 {
@@ -212,16 +212,6 @@ enum EPdfContentsType
     ePdfContentsType_Keyword = 0,
     ePdfContentsType_Variant = 1,
     ePdfContentsType_ImageData = 2
-};
-enum EPdfTilingPatternType
-{
-    ePdfTilingPatternType_BDiagonal = 1,
-    ePdfTilingPatternType_Cross,
-    ePdfTilingPatternType_DiagCross,
-    ePdfTilingPatternType_FDiagonal,
-    ePdfTilingPatternType_Horizontal,
-    ePdfTilingPatternType_Vertical,
-    ePdfTilingPatternType_Image
 };
 enum EPdfError
 {
@@ -294,12 +284,6 @@ enum EPdfStringConversion
 {
     ePdfStringConversion_Strict,
     ePdfStringConversion_Lenient
-};
-enum EPdfTokenType
-{
-    ePdfTokenType_Delimiter,
-    ePdfTokenType_Token,
-    ePdfTokenType_Unknown = 0xFF
 };
 enum EPdfAcroFormDefaulAppearance
 {
@@ -419,14 +403,7 @@ enum EPdfHighlightingMode
     ePdfHighlightingMode_Invert,
     ePdfHighlightingMode_InvertOutline,
     ePdfHighlightingMode_Push,
-    ePdfField_Unknown = 0xff
-};
-enum EPdfFunctionType
-{
-    ePdfFunctionType_Sampled = 0,
-    ePdfFunctionType_Exponential = 2,
-    ePdfFunctionType_Stitching = 3,
-    ePdfFunctionType_PostScript = 4
+    ePdfHighlightingMode_Unknown = 0xff
 };
 enum EPdfNameLimits
 {

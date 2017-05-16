@@ -44,10 +44,10 @@
 
 
 virtual ~PdfPagesTreeCache() {}
-virtual PoDoFo::PdfPage* GetPage( nIndex) = 0;
-virtual void AddPageObject( nIndex, PoDoFo::PdfPage* pPage) = 0;
-virtual void AddPageObjects( nIndex, Bcapi::Vector<PoDoFo::PdfPage*> vecPages) = 0;
-virtual void InsertPage( nAfterPageIndex) = 0;
-virtual void InsertPages( nAfterPageIndex,  nCount) = 0;
-virtual void DeletePage( inPageNumber) = 0;
+virtual PoDoFo::PdfPage* GetPage(int nIndex) = 0;
+virtual void AddPageObject(int nIndex, PoDoFo::PdfPage* pPage) = 0;
+virtual void AddPageObjects(int nIndex, Bcapi::Vector<PoDoFo::PdfPage*> vecPages) = 0;
+virtual void InsertPage(int nAfterPageIndex) = 0;
+virtual void InsertPages(int nAfterPageIndex, int nCount) = 0;
+virtual void DeletePage(int inPageNumber) = 0;
 virtual void ClearCache() = 0;

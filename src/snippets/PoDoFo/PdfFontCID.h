@@ -46,4 +46,4 @@
 virtual ~PdfFontCID() {}
 virtual void EmbedFont() = 0;
 virtual void EmbedSubsetFont() = 0;
-virtual void AddUsedSubsettingGlyphs(PoDoFo::PdfString sText,  lStringLen) = 0;
+virtual void AddUsedSubsettingGlyphs(PoDoFo::PdfString sText, bool lStringLen) = 0;

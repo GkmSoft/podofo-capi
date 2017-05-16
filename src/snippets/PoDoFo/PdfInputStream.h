@@ -44,4 +44,4 @@
 
 
 virtual ~PdfInputStream() {}
-virtual  Read( pBuffer,  lLen, Bcapi::PdfLong pTotalLeft) = 0;
+virtual PoDoFo::pdf_long Read(char* pBuffer, PoDoFo::pdf_long lLen, Bcapi::PdfLongImpl pTotalLeft) = 0;

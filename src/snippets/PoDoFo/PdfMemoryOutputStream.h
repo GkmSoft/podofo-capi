@@ -44,7 +44,7 @@
 
 
 virtual ~PdfMemoryOutputStream() {}
-virtual  Write( pBuffer,  lLen) = 0;
+virtual PoDoFo::pdf_long Write(const char* pBuffer, PoDoFo::pdf_long lLen) = 0;
 virtual void Close() = 0;
-virtual  TakeBuffer() = 0;
-virtual  GetLength() const = 0;
+virtual char* TakeBuffer() = 0;
+virtual PoDoFo::pdf_long GetLength() const = 0;

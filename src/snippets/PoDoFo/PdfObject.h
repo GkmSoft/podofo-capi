@@ -47,12 +47,12 @@ virtual ~PdfObject() {}
 virtual PoDoFo::PdfObject* GetIndirectKey(PoDoFo::PdfName key) const = 0;
 virtual PoDoFo::PdfObject* MustGetIndirectKey(PoDoFo::PdfName key) const = 0;
 virtual void WriteObject(PoDoFo::PdfOutputDevice* pDevice, PoDoFo::EPdfWriteMode eWriteMode, PoDoFo::PdfEncrypt* pEncrypt, PoDoFo::PdfName keyStop) const = 0;
-virtual  GetObjectLength(PoDoFo::EPdfWriteMode eWriteMode) = 0;
+virtual PoDoFo::pdf_long GetObjectLength(PoDoFo::EPdfWriteMode eWriteMode) = 0;
 virtual PoDoFo::PdfReference Reference() const = 0;
 virtual PoDoFo::PdfStream* GetStream() = 0;
-virtual  HasStream() const = 0;
+virtual bool HasStream() const = 0;
 virtual void FlateCompressStream() = 0;
-virtual  GetByteOffset( pszKey, PoDoFo::EPdfWriteMode eWriteMode) = 0;
+virtual PoDoFo::pdf_long GetByteOffset(const char* pszKey, PoDoFo::EPdfWriteMode eWriteMode) = 0;
 virtual void DelayedStreamLoad() const = 0;
 virtual PoDoFo::PdfVecObjects* GetOwner() const = 0;
 virtual void SetOwner(PoDoFo::PdfVecObjects* owner) = 0;

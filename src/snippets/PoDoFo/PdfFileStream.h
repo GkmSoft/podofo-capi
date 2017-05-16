@@ -46,6 +46,6 @@
 virtual ~PdfFileStream() {}
 virtual void SetEncrypted(PoDoFo::PdfEncrypt* pEncrypt) = 0;
 virtual void Write(PoDoFo::PdfOutputDevice* pDevice, PoDoFo::PdfEncrypt* pEncrypt) = 0;
-virtual void GetCopy( pBuffer, Bcapi::PdfLong lLen) const = 0;
+virtual void GetCopy(char** pBuffer, Bcapi::PdfLongImpl lLen) const = 0;
 virtual void GetCopy(PoDoFo::PdfOutputStream* pStream) const = 0;
-virtual  GetLength() const = 0;
+virtual PoDoFo::pdf_long GetLength() const = 0;

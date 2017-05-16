@@ -45,94 +45,67 @@
 #include <stdexcept>
 #include <cassert>
 #include "bcapi/String.h"
-#include "bcapi/PdfLong.h"
+#include "bcapi/PdfLongImpl.h"
 #include "bcapi/Vector.h"
-#include "bcapi/KeyMap.h"
+#include "bcapi/Set.h"
+#include "bcapi/List.h"
+#include "bcapi/SharedPtr.h"
 #include "PoDoFo/base/PdfVariant.h"
-#include "PoDoFo/base/PdfDataType.h"
-#include "PoDoFo/base/PdfObject.h"
 #include "PoDoFo/base/PdfArray.h"
-#include "PoDoFo/base/PdfCanvas.h"
 #include "PoDoFo/base/PdfColor.h"
 #include "PoDoFo/base/PdfData.h"
 #include "PoDoFo/base/PdfDate.h"
 #include "PoDoFo/base/PdfDictionary.h"
 #include "PoDoFo/base/PdfEncoding.h"
 #include "PoDoFo/base/PdfEncodingFactory.h"
-#include "PoDoFo/base/PdfEncrypt.h"
 #include "PoDoFo/base/PdfError.h"
 #include "PoDoFo/base/PdfExtension.h"
-#include "PoDoFo/base/PdfFileStream.h"
 #include "PoDoFo/base/PdfFilter.h"
-#include "PoDoFo/base/PdfInputDevice.h"
-#include "PoDoFo/base/PdfInputStream.h"
-#include "PoDoFo/base/PdfMemStream.h"
 #include "PoDoFo/base/PdfName.h"
 #include "PoDoFo/base/PdfObjectStreamParserObject.h"
-#include "PoDoFo/base/PdfOutputDevice.h"
 #include "PoDoFo/base/PdfImmediateWriter.h"
-#include "PoDoFo/base/PdfOutputStream.h"
 #include "PoDoFo/base/PdfParser.h"
-#include "PoDoFo/base/PdfParserObject.h"
 #include "PoDoFo/base/PdfRect.h"
 #include "PoDoFo/base/PdfRefCountedBuffer.h"
 #include "PoDoFo/base/PdfRefCountedInputDevice.h"
 #include "PoDoFo/base/PdfReference.h"
-#include "PoDoFo/base/PdfStream.h"
 #include "PoDoFo/base/PdfString.h"
-#include "PoDoFo/base/PdfTokenizer.h"
 #include "PoDoFo/base/PdfVecObjects.h"
 #include "PoDoFo/base/PdfWriter.h"
 #include "PoDoFo/base/PdfXRef.h"
 #include "PoDoFo/base/PdfXRefStream.h"
 #include "PoDoFo/base/PdfXRefStreamParserObject.h"
 #include "PoDoFo/doc/PdfAcroForm.h"
-#include "PoDoFo/doc/PdfAction.h"
 #include "PoDoFo/doc/PdfAnnotation.h"
-#include "PoDoFo/doc/PdfCMapEncoding.h"
 #include "PoDoFo/doc/PdfContents.h"
 #include "PoDoFo/doc/PdfDestination.h"
 #include "PoDoFo/doc/PdfDifferenceEncoding.h"
-#include "PoDoFo/doc/PdfDocument.h"
 #include "PoDoFo/doc/PdfElement.h"
 #include "PoDoFo/doc/PdfEncodingObjectFactory.h"
 #include "PoDoFo/doc/PdfExtGState.h"
 #include "PoDoFo/doc/PdfField.h"
 #include "PoDoFo/doc/PdfFileSpec.h"
-#include "PoDoFo/doc/PdfFont.h"
 #include "PoDoFo/doc/PdfFontCache.h"
-#include "PoDoFo/doc/PdfFontCID.h"
 #include "PoDoFo/doc/PdfFontConfigWrapper.h"
 #include "PoDoFo/doc/PdfFontFactory.h"
-#include "PoDoFo/doc/PdfFontMetrics.h"
 #include "PoDoFo/doc/PdfFontMetricsBase14.h"
-#include "PoDoFo/doc/PdfFontMetricsFreetype.h"
-#include "PoDoFo/doc/PdfFontMetricsObject.h"
-#include "PoDoFo/doc/PdfFontSimple.h"
 #include "PoDoFo/doc/PdfFontTrueType.h"
 #include "PoDoFo/doc/PdfFontTTFSubset.h"
 #include "PoDoFo/doc/PdfFontType1.h"
-#include "PoDoFo/doc/PdfFontType1Base14.h"
 #include "PoDoFo/doc/PdfFontType3.h"
 #include "PoDoFo/doc/PdfFunction.h"
 #include "PoDoFo/doc/PdfIdentityEncoding.h"
 #include "PoDoFo/doc/PdfImage.h"
 #include "PoDoFo/doc/PdfInfo.h"
-#include "PoDoFo/doc/PdfMemDocument.h"
 #include "PoDoFo/doc/PdfNamesTree.h"
 #include "PoDoFo/doc/PdfOutlines.h"
-#include "PoDoFo/doc/PdfPage.h"
-#include "PoDoFo/doc/PdfPagesTree.h"
-#include "PoDoFo/doc/PdfPagesTreeCache.h"
 #include "PoDoFo/doc/PdfPainter.h"
 #include "PoDoFo/doc/PdfPainterMM.h"
 #include "PoDoFo/doc/PdfShadingPattern.h"
 #include "PoDoFo/doc/PdfSignatureField.h"
 #include "PoDoFo/doc/PdfSignOutputDevice.h"
-#include "PoDoFo/doc/PdfStreamedDocument.h"
 #include "PoDoFo/doc/PdfTable.h"
 #include "PoDoFo/doc/PdfTilingPattern.h"
-#include "PoDoFo/doc/PdfXObject.h"
 
 #ifdef _WIN32
     #ifdef __GNUC__
@@ -264,56 +237,45 @@ PODOFO_API void PODOFO_API_CONVENTION bcapi_string_delete(void* object_pointer)
 
 PODOFO_API void* PODOFO_API_CONVENTION bcapi_pdf_long_from_pdf_long(int64_t value)
 {
-    return new Bcapi::PdfLong(static_cast<PoDoFo::pdf_long>(value));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION bcapi_pdf_long_from_int64(int64_t value)
-{
-    return new Bcapi::PdfLong(static_cast<PoDoFo::pdf_int64>(value));
+    return new Bcapi::PdfLongImpl(static_cast<PoDoFo::pdf_long>(value));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION bcapi_pdf_long_set_value(void* object_pointer, int64_t value)
 {
-    Bcapi::PdfLong* self = static_cast<Bcapi::PdfLong*>(object_pointer);
+    Bcapi::PdfLongImpl* self = static_cast<Bcapi::PdfLongImpl*>(object_pointer);
     self->SetValue(static_cast<PoDoFo::pdf_long>(value));
-}
-
-PODOFO_API void PODOFO_API_CONVENTION bcapi_pdf_long_set_value_1(void* object_pointer, int64_t value)
-{
-    Bcapi::PdfLong* self = static_cast<Bcapi::PdfLong*>(object_pointer);
-    self->SetValue(static_cast<PoDoFo::pdf_int64>(value));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION bcapi_pdf_long_get_value(void* object_pointer)
 {
-    Bcapi::PdfLong* self = static_cast<Bcapi::PdfLong*>(object_pointer);
+    Bcapi::PdfLongImpl* self = static_cast<Bcapi::PdfLongImpl*>(object_pointer);
     return static_cast<int64_t>(self->GetValue());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION bcapi_pdf_long_get_pointer(void* object_pointer)
 {
-    Bcapi::PdfLong* self = static_cast<Bcapi::PdfLong*>(object_pointer);
-    return new Bcapi::PdfLong(self->GetPointer());
+    Bcapi::PdfLongImpl* self = static_cast<Bcapi::PdfLongImpl*>(object_pointer);
+    return new Bcapi::PdfLongImpl(self->GetPointer());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION bcapi_pdf_long_copy(void* object_pointer)
 {
-    return new Bcapi::PdfLong(*static_cast<Bcapi::PdfLong*>(object_pointer));
+    return new Bcapi::PdfLongImpl(*static_cast<Bcapi::PdfLongImpl*>(object_pointer));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION bcapi_pdf_long_delete(void* object_pointer)
 {
-    delete static_cast<Bcapi::PdfLong*>(object_pointer);
+    delete static_cast<Bcapi::PdfLongImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION bcapi_vector_po_do_fo_pdf_page_raw_ptr_copy(void* object_pointer)
 {
-    return new Bcapi::Vector<PoDoFo::PdfPage*>(*static_cast<Bcapi::Vector<PoDoFo::PdfPage*>*>(object_pointer));
+    return new Bcapi::Vector<PoDoFo::PdfPageImpl*>(*static_cast<Bcapi::Vector<PoDoFo::PdfPageImpl*>*>(object_pointer));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION bcapi_vector_po_do_fo_pdf_page_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<Bcapi::Vector<PoDoFo::PdfPage*>*>(object_pointer);
+    delete static_cast<Bcapi::Vector<PoDoFo::PdfPageImpl*>*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION bcapi_vector_po_do_fo_pdf_rect_copy(void* object_pointer)
@@ -366,14 +328,49 @@ PODOFO_API void PODOFO_API_CONVENTION bcapi_vector_po_do_fo_tvec_objects_raw_ptr
     delete static_cast<Bcapi::Vector<PoDoFo::TVecObjects*>*>(object_pointer);
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION bcapi_key_map_po_do_fo_pdf_name_po_do_fo_pdf_object_raw_ptr_copy(void* object_pointer)
+PODOFO_API void* PODOFO_API_CONVENTION bcapi_set_po_do_fo_pdf_utf16be_copy(void* object_pointer)
 {
-    return new Bcapi::KeyMap<PoDoFo::PdfName,PoDoFo::PdfObject*>(*static_cast<Bcapi::KeyMap<PoDoFo::PdfName,PoDoFo::PdfObject*>*>(object_pointer));
+    return new Bcapi::Set<PoDoFo::pdf_utf16be>(*static_cast<Bcapi::Set<PoDoFo::pdf_utf16be>*>(object_pointer));
 }
 
-PODOFO_API void PODOFO_API_CONVENTION bcapi_key_map_po_do_fo_pdf_name_po_do_fo_pdf_object_raw_ptr_delete(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION bcapi_set_po_do_fo_pdf_utf16be_delete(void* object_pointer)
 {
-    delete static_cast<Bcapi::KeyMap<PoDoFo::PdfName,PoDoFo::PdfObject*>*>(object_pointer);
+    delete static_cast<Bcapi::Set<PoDoFo::pdf_utf16be>*>(object_pointer);
+}
+
+PODOFO_API void* PODOFO_API_CONVENTION bcapi_list_po_do_fo_pdf_function_copy(void* object_pointer)
+{
+    return new Bcapi::List<PoDoFo::PdfFunction>(*static_cast<Bcapi::List<PoDoFo::PdfFunction>*>(object_pointer));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION bcapi_list_po_do_fo_pdf_function_delete(void* object_pointer)
+{
+    delete static_cast<Bcapi::List<PoDoFo::PdfFunction>*>(object_pointer);
+}
+
+PODOFO_API void* PODOFO_API_CONVENTION bcapi_list_char_copy(void* object_pointer)
+{
+    return new Bcapi::List<char>(*static_cast<Bcapi::List<char>*>(object_pointer));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION bcapi_list_char_delete(void* object_pointer)
+{
+    delete static_cast<Bcapi::List<char>*>(object_pointer);
+}
+
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_create_pdf_encrypt(const char* userPassword, const char* ownerPassword, int32_t protection, uint8_t eAlgorithm, unsigned char eKeyLength)
+{
+    return new PoDoFo::PdfEncryptImpl(PoDoFo::PdfEncrypt::CreatePdfEncrypt(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncryptImpl::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncryptImpl::EPdfKeyLength>(eKeyLength)));
+}
+
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_create_pdf_encrypt_1(void* pObject)
+{
+    return new PoDoFo::PdfEncryptImpl(PoDoFo::PdfEncrypt::CreatePdfEncrypt(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
+}
+
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_create_pdf_encrypt_2(void* rhs)
+{
+    return new PoDoFo::PdfEncryptImpl(PoDoFo::PdfEncrypt::CreatePdfEncrypt(*static_cast<PoDoFo::PdfEncryptImpl*>(rhs)->get()));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_get_major_version()
@@ -439,11 +436,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_variant_from_pdf_dictionary(
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_variant_from_pdf_data(void* rData)
 {
     return new PoDoFo::PdfVariant(*static_cast<PoDoFo::PdfData*>(rData));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_variant_from_pdf_variant(void* rhs)
-{
-    return new PoDoFo::PdfVariant(*static_cast<PoDoFo::PdfVariant*>(rhs));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_variant_is_empty_const(void* object_pointer)
@@ -524,12 +516,6 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_variant_is_raw_data_const(
     return static_cast<uint8_t>(self->IsRawData());
 }
 
-PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_variant_is_null_const(void* object_pointer)
-{
-    const PoDoFo::PdfVariant* self = static_cast<PoDoFo::PdfVariant*>(object_pointer);
-    return static_cast<uint8_t>(self->IsNull());
-}
-
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_variant_is_reference_const(void* object_pointer)
 {
     const PoDoFo::PdfVariant* self = static_cast<PoDoFo::PdfVariant*>(object_pointer);
@@ -539,13 +525,13 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_variant_is_reference_const
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_variant_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfVariant* self = static_cast<PoDoFo::PdfVariant*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_variant_write_const_1(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt, void* keyStop)
 {
     const PoDoFo::PdfVariant* self = static_cast<PoDoFo::PdfVariant*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), *static_cast<PoDoFo::PdfName*>(keyStop));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), *static_cast<PoDoFo::PdfName*>(keyStop));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_variant_to_string_const(void* object_pointer, void* rsData, unsigned char eWriteMode)
@@ -674,119 +660,114 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_variant_delete(void* object_p
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_type_write(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
-    PoDoFo::PdfDataType* self = static_cast<PoDoFo::PdfDataType*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfDataTypeImpl* self = static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_data_type_is_dirty_const(void* object_pointer)
 {
-    const PoDoFo::PdfDataType* self = static_cast<PoDoFo::PdfDataType*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDirty());
+    const PoDoFo::PdfDataTypeImpl* self = static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDirty());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_type_set_dirty(void* object_pointer, uint8_t bDirty)
 {
-    PoDoFo::PdfDataType* self = static_cast<PoDoFo::PdfDataType*>(object_pointer);
-    self->SetDirty(static_cast<bool>(bDirty));
+    PoDoFo::PdfDataTypeImpl* self = static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
+    (*self)->SetDirty(static_cast<bool>(bDirty));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_data_type_get_immutable_const(void* object_pointer)
 {
-    const PoDoFo::PdfDataType* self = static_cast<PoDoFo::PdfDataType*>(object_pointer);
-    return static_cast<uint8_t>(self->GetImmutable());
+    const PoDoFo::PdfDataTypeImpl* self = static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetImmutable());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_type_set_immutable(void* object_pointer, uint8_t immutable)
 {
-    PoDoFo::PdfDataType* self = static_cast<PoDoFo::PdfDataType*>(object_pointer);
-    self->SetImmutable(static_cast<bool>(immutable));
+    PoDoFo::PdfDataTypeImpl* self = static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
+    (*self)->SetImmutable(static_cast<bool>(immutable));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_type_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDataType*>(object_pointer);
+    delete static_cast<PoDoFo::PdfDataTypeImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_get_indirect_key_const(void* object_pointer, void* key)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetIndirectKey(*static_cast<PoDoFo::PdfName*>(key));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetIndirectKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_must_get_indirect_key_const(void* object_pointer, void* key)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->MustGetIndirectKey(*static_cast<PoDoFo::PdfName*>(key));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->MustGetIndirectKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_write_object_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt, void* keyStop)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), *static_cast<PoDoFo::PdfName*>(keyStop));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->WriteObject(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), *static_cast<PoDoFo::PdfName*>(keyStop));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_object_get_object_length(void* object_pointer, unsigned char eWriteMode)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetObjectLength(static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetObjectLength(static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_reference_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return new PoDoFo::PdfReference(self->Reference());
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfReference((*self)->Reference());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_get_stream(void* object_pointer)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetStream();
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return (*self)->GetStream();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_object_has_stream_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<uint8_t>(self->HasStream());
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasStream());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_flate_compress_stream(void* object_pointer)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->FlateCompressStream();
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->FlateCompressStream();
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_object_get_byte_offset(void* object_pointer, const char* pszKey, unsigned char eWriteMode)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetByteOffset(static_cast<const char*>(pszKey), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetByteOffset(static_cast<const char*>(pszKey), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_delayed_stream_load_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->DelayedStreamLoad();
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->DelayedStreamLoad();
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_get_owner_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetOwner();
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfVecObjects*>((*self)->GetOwner());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_set_owner(void* object_pointer, void* owner)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->SetOwner(static_cast<PoDoFo::PdfVecObjects*>(owner));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->SetOwner(static_cast<PoDoFo::PdfVecObjects*>(owner));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfVariant*>(static_cast<PoDoFo::PdfObject*>(object_pointer));
+    delete static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_default()
@@ -796,12 +777,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_default()
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_from_pdf_object(void* var)
 {
-    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfObject*>(var));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_from_pdf_array(void* rhs)
-{
-    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfArray*>(rhs));
+    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfObjectImpl*>(var)->get());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_get_size_const(void* object_pointer)
@@ -819,7 +795,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_clear(void* object_poin
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_contains_string_const(void* object_pointer, const char* cmpString)
@@ -837,7 +813,7 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_get_string_index_cons
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_push_back(void* object_pointer, void* var)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->push_back(*static_cast<PoDoFo::PdfObject*>(var));
+    self->push_back(*static_cast<PoDoFo::PdfObjectImpl*>(var)->get());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_size_const(void* object_pointer)
@@ -855,7 +831,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_empty_const(void* ob
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_resize(void* object_pointer, size_t n, void* x)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->resize(static_cast<size_t>(n), *static_cast<PoDoFo::PdfObject*>(x));
+    self->resize(static_cast<size_t>(n), *static_cast<PoDoFo::PdfObjectImpl*>(x)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_begin(void* object_pointer)
@@ -915,7 +891,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_insert(void* object_poi
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_insert_1(void* object_pointer, void* position, void* val)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfArrayBaseClass::iterator(self->insert(*static_cast<PoDoFo::PdfArrayBaseClass::iterator*>(position), *static_cast<PoDoFo::PdfObject*>(val)));
+    return new PoDoFo::PdfArrayBaseClass::iterator(self->insert(*static_cast<PoDoFo::PdfArrayBaseClass::iterator*>(position), *static_cast<PoDoFo::PdfObjectImpl*>(val)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_erase(void* object_pointer, void* pos)
@@ -936,28 +912,28 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_reserve(void* object_po
     self->reserve(static_cast<size_t>(n));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_front(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_front(void* object_pointer)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->front());
+    return static_cast<void>(self->front());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_front_const(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_front_const(void* object_pointer)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->front());
+    return static_cast<void>(self->front());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_back(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_back(void* object_pointer)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->back());
+    return static_cast<void>(self->back());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_back_const(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_back_const(void* object_pointer)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->back());
+    return static_cast<void>(self->back());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_is_dirty_const(void* object_pointer)
@@ -984,7 +960,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_delete(void* object_poi
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfArray*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfArray*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_iterator_copy(void* object_pointer)
@@ -1029,49 +1005,49 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_const_reverse_iterator_
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_get_proc_set_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return new PoDoFo::PdfArray(self->GetProcSet());
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfArray((*self)->GetProcSet());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_add_color_resource(void* object_pointer, void* rColor)
 {
-    PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    self->AddColorResource(*static_cast<PoDoFo::PdfColor*>(rColor));
+    PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    (*self)->AddColorResource(*static_cast<PoDoFo::PdfColor*>(rColor));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_add_resource(void* object_pointer, void* rIdentifier, void* rRef, void* rName)
 {
-    PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    self->AddResource(*static_cast<PoDoFo::PdfName*>(rIdentifier), *static_cast<PoDoFo::PdfReference*>(rRef), *static_cast<PoDoFo::PdfName*>(rName));
+    PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    (*self)->AddResource(*static_cast<PoDoFo::PdfName*>(rIdentifier), *static_cast<PoDoFo::PdfReference*>(rRef), *static_cast<PoDoFo::PdfName*>(rName));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfCanvas*>(object_pointer);
+    delete static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_default()
@@ -1092,11 +1068,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_from_rgb(double dRed, 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_from_cmyk(double dCyan, double dMagenta, double dYellow, double dBlack)
 {
     return new PoDoFo::PdfColor(static_cast<double>(dCyan), static_cast<double>(dMagenta), static_cast<double>(dYellow), static_cast<double>(dBlack));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_from_pdf_color(void* rhs)
-{
-    return new PoDoFo::PdfColor(*static_cast<PoDoFo::PdfColor*>(rhs));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_color_is_gray_scale_const(void* object_pointer)
@@ -1270,7 +1241,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_get_name_for_color_spa
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_color_build_color_space(void* object_pointer, void* pOwner)
 {
     PoDoFo::PdfColor* self = static_cast<PoDoFo::PdfColor*>(object_pointer);
-    return self->BuildColorSpace(static_cast<PoDoFo::PdfVecObjects*>(pOwner));
+    return new PoDoFo::PdfObjectImpl(self->BuildColorSpace(static_cast<PoDoFo::PdfVecObjects*>(pOwner)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_color_delete(void* object_pointer)
@@ -1393,15 +1364,10 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_from_buffer(const char*
     return new PoDoFo::PdfData(static_cast<const char*>(pszData), static_cast<size_t>(dataSize));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_from_other(void* rhs)
-{
-    return new PoDoFo::PdfData(*static_cast<PoDoFo::PdfData*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfData* self = static_cast<PoDoFo::PdfData*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_data_data_const(void* object_pointer)
@@ -1422,7 +1388,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_delete(void* object_poin
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfData*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfData*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_date_default()
@@ -1473,11 +1439,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_default()
     return new PoDoFo::PdfDictionary();
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_from_other(void* rhs)
-{
-    return new PoDoFo::PdfDictionary(*static_cast<PoDoFo::PdfDictionary*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_clear(void* object_pointer)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
@@ -1487,13 +1448,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_clear(void* object
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_add_key(void* object_pointer, void* identifier, void* rObject)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    self->AddKey(*static_cast<PoDoFo::PdfName*>(identifier), static_cast<PoDoFo::PdfObject*>(rObject));
+    self->AddKey(*static_cast<PoDoFo::PdfName*>(identifier), static_cast<PoDoFo::PdfObjectImpl*>(rObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_get_key(void* object_pointer, void* key)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    return self->GetKey(*static_cast<PoDoFo::PdfName*>(key));
+    return new PoDoFo::PdfObjectImpl(self->GetKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_get_key_as_long_const(void* object_pointer, void* key, int64_t lDefault)
@@ -1535,13 +1496,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_remove_key(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt, void* keyStop)
 {
     const PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), *static_cast<PoDoFo::PdfName*>(keyStop));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_get_keys_const(void* object_pointer)
-{
-    const PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    return new Bcapi::KeyMap<PoDoFo::PdfName,PoDoFo::PdfObject*>(self->GetKeys());
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), *static_cast<PoDoFo::PdfName*>(keyStop));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_is_dirty_const(void* object_pointer)
@@ -1568,17 +1523,12 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_delete(void* objec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfDictionary*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfDictionary*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_const_iterator_from_pdf_encoding(void* pEncoding, int32_t nCur)
 {
-    return new PoDoFo::PdfEncoding::const_iterator(static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<int>(nCur));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_const_iterator_from_other(void* rhs)
-{
-    return new PoDoFo::PdfEncoding::const_iterator(*static_cast<PoDoFo::PdfEncoding::const_iterator*>(rhs));
+    return new PoDoFo::PdfEncoding::const_iterator(static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<int>(nCur));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_const_iterator_copy(void* object_pointer)
@@ -1593,278 +1543,228 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_const_iterator_delete(void* objec
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_add_to_dictionary(void* object_pointer, void* rDictionary)
 {
-    PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_convert_to_unicode_const(void* object_pointer, void* rEncodedString, void* pFont)
 {
-    const PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
-    const PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfRefCountedBuffer((*self)->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfEncoding*>(object_pointer);
+    delete static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_add_to_dictionary_const(void* object_pointer, void* rDictionary)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_convert_to_unicode_const(void* object_pointer, void* eEncodedString, void* pFont)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(eEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(eEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfRefCountedBuffer((*self)->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_is_auto_delete_const(void* object_pointer)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAutoDelete());
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAutoDelete());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_is_single_byte_encoding_const(void* object_pointer)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSingleByteEncoding());
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSingleByteEncoding());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_get_name_const(void* object_pointer)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetName());
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetName());
 }
 
 PODOFO_API uint16_t PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_get_char_code_const(void* object_pointer, int32_t nIndex)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return static_cast<uint16_t>(self->GetCharCode(static_cast<int>(nIndex)));
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return static_cast<uint16_t>((*self)->GetCharCode(static_cast<int>(nIndex)));
 }
 
 PODOFO_API int8_t PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_get_unicode_char_code_const(void* object_pointer, uint16_t unicodeValue)
 {
-    const PoDoFo::PdfSimpleEncoding* self = static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-    return static_cast<int8_t>(self->GetUnicodeCharCode(static_cast<PoDoFo::pdf_utf16be>(unicodeValue)));
+    const PoDoFo::PdfSimpleEncodingImpl* self = static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
+    return static_cast<int8_t>((*self)->GetUnicodeCharCode(static_cast<PoDoFo::pdf_utf16be>(unicodeValue)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfEncoding*>(static_cast<PoDoFo::PdfSimpleEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfSimpleEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_doc_encoding_default()
 {
-    return new PoDoFo::PdfDocEncoding();
+    return new PoDoFo::PdfDocEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_doc_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDocEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_doc_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfDocEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfDocEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_win_ansi_encoding_default()
 {
-    return new PoDoFo::PdfWinAnsiEncoding();
+    return new PoDoFo::PdfWinAnsiEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_win_ansi_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfWinAnsiEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_win_ansi_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfWinAnsiEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfWinAnsiEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mac_roman_encoding_default()
 {
-    return new PoDoFo::PdfMacRomanEncoding();
+    return new PoDoFo::PdfMacRomanEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mac_roman_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMacRomanEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mac_roman_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfMacRomanEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMacRomanEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mac_expert_encoding_default()
 {
-    return new PoDoFo::PdfMacExpertEncoding();
+    return new PoDoFo::PdfMacExpertEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mac_expert_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMacExpertEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mac_expert_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfMacExpertEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMacExpertEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_standard_encoding_default()
 {
-    return new PoDoFo::PdfStandardEncoding();
+    return new PoDoFo::PdfStandardEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_standard_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfStandardEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_standard_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfStandardEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfStandardEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_symbol_encoding_default()
 {
-    return new PoDoFo::PdfSymbolEncoding();
+    return new PoDoFo::PdfSymbolEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_symbol_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfSymbolEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_symbol_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfSymbolEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfSymbolEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_zapf_dingbats_encoding_default()
 {
-    return new PoDoFo::PdfZapfDingbatsEncoding();
+    return new PoDoFo::PdfZapfDingbatsEncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_zapf_dingbats_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfZapfDingbatsEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_zapf_dingbats_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfSimpleEncoding*>(static_cast<PoDoFo::PdfZapfDingbatsEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfZapfDingbatsEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_win1250_encoding_default()
 {
-    return new PoDoFo::PdfWin1250Encoding();
+    return new PoDoFo::PdfWin1250EncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_win1250_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfWin1250Encoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_win1250_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfWinAnsiEncoding*>(static_cast<PoDoFo::PdfWin1250Encoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfWin1250EncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_iso88592_encoding_default()
 {
-    return new PoDoFo::PdfIso88592Encoding();
+    return new PoDoFo::PdfIso88592EncodingImpl();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_iso88592_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfIso88592Encoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_iso88592_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfWinAnsiEncoding*>(static_cast<PoDoFo::PdfIso88592Encoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfIso88592EncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_pdf_doc_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalPdfDocEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalPdfDocEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_win_ansi_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalWinAnsiEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalWinAnsiEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_mac_roman_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalMacRomanEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalMacRomanEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_standard_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalStandardEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalStandardEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_mac_expert_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalMacExpertEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalMacExpertEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_symbol_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalSymbolEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalSymbolEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_zapf_dingbats_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalZapfDingbatsEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalZapfDingbatsEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_identity_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalIdentityEncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalIdentityEncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_win1250_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalWin1250EncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalWin1250EncodingInstance());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_global_iso88592_encoding_instance(void* object_pointer)
 {
     PoDoFo::PdfEncodingFactory* self = static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GlobalIso88592EncodingInstance());
+    return new PoDoFo::PdfEncodingImpl(self->GlobalIso88592EncodingInstance());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_free_global_encoding_instances(void* object_pointer)
@@ -1889,195 +1789,177 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_factory_delete(void*
     delete static_cast<PoDoFo::PdfEncodingFactory*>(object_pointer);
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_pdf_encrypt(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, unsigned char eAlgorithm, unsigned char eKeyLength)
+PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_encryption_enabled(void* object_pointer, uint8_t eAlgorithm)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncrypt::EPdfKeyLength>(eKeyLength));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_pdf_encrypt_1(void* object_pointer, void* pObject)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(static_cast<PoDoFo::PdfObject*>(pObject));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_pdf_encrypt_2(void* object_pointer, void* rhs)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(*static_cast<PoDoFo::PdfEncrypt*>(rhs));
-}
-
-PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_encryption_enabled(void* object_pointer, unsigned char eAlgorithm)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEncryptionEnabled(static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm)));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEncryptionEnabled(static_cast<PoDoFo::PdfEncryptImpl::EPdfEncryptAlgorithm>(eAlgorithm)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_generate_encryption_key(void* object_pointer, void* documentID)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->GenerateEncryptionKey(*static_cast<PoDoFo::PdfString*>(documentID));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->GenerateEncryptionKey(*static_cast<PoDoFo::PdfString*>(documentID));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_encryption_dictionary_const(void* object_pointer, void* rDictionary)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->CreateEncryptionDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->CreateEncryptionDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_encryption_output_stream(void* object_pointer, void* pOutputStream)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreateEncryptionOutputStream(static_cast<PoDoFo::PdfOutputStream*>(pOutputStream));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return (*self)->CreateEncryptionOutputStream(static_cast<PoDoFo::PdfOutputStreamImpl*>(pOutputStream)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_create_encryption_input_stream(void* object_pointer, void* pInputStream)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreateEncryptionInputStream(static_cast<PoDoFo::PdfInputStream*>(pInputStream));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return (*self)->CreateEncryptionInputStream(static_cast<PoDoFo::PdfInputStreamImpl*>(pInputStream)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_authenticate(void* object_pointer, const char* password, void* documentID)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->Authenticate(static_cast<const char*>(password), *static_cast<PoDoFo::PdfString*>(documentID)));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Authenticate(static_cast<const char*>(password), *static_cast<PoDoFo::PdfString*>(documentID)));
 }
 
-PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_encrypt_algorithm_const(void* object_pointer)
+PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_encrypt_algorithm_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<unsigned char>(self->GetEncryptAlgorithm());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetEncryptAlgorithm());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_uvalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetUValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetUValue());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_ovalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetOValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetOValue());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_encryption_key_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetEncryptionKey());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetEncryptionKey());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_pvalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetPValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetPValue());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_revision_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetRevision());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetRevision());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_key_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetKeyLength());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetKeyLength());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_is_metadata_encrypted_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsMetadataEncrypted());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsMetadataEncrypted());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_encrypt_const(void* object_pointer, const unsigned char* inStr, int64_t inLen, unsigned char* outStr, int64_t outLen)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->Encrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<PoDoFo::pdf_long>(outLen));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->Encrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<PoDoFo::pdf_long>(outLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_decrypt_const(void* object_pointer, const unsigned char* inStr, int64_t inLen, unsigned char* outStr, void* outLen)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->Decrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<Bcapi::PdfLong*>(outLen)->GetReference());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->Decrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<Bcapi::PdfLongImpl*>(outLen)->GetReference());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_calculate_stream_length_const(void* object_pointer, int64_t length)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int64_t>(self->CalculateStreamLength(static_cast<PoDoFo::pdf_long>(length)));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->CalculateStreamLength(static_cast<PoDoFo::pdf_long>(length)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_set_current_reference(void* object_pointer, void* rRef)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->SetCurrentReference(*static_cast<PoDoFo::PdfReference*>(rRef));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->SetCurrentReference(*static_cast<PoDoFo::PdfReference*>(rRef));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_get_enabled_encryption_algorithms_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetEnabledEncryptionAlgorithms());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetEnabledEncryptionAlgorithms());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_set_enabled_encryption_algorithms(void* object_pointer, int32_t enabled_encryption_algorithms)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->SetEnabledEncryptionAlgorithms(static_cast<int>(enabled_encryption_algorithms));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->SetEnabledEncryptionAlgorithms(static_cast<int>(enabled_encryption_algorithms));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
+    delete static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_info_default()
@@ -2093,11 +1975,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_info_from_char_info(in
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_info_from_widechar_info(int32_t line, const char* pszFile, const wchar_t* pszInfo)
 {
     return new PoDoFo::PdfErrorInfo(static_cast<int>(line), static_cast<const char*>(pszFile), static_cast<const wchar_t*>(pszInfo));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_info_from_other(void* rhs)
-{
-    return new PoDoFo::PdfErrorInfo(*static_cast<PoDoFo::PdfErrorInfo*>(rhs));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_error_info_get_line_const(void* object_pointer)
@@ -2178,11 +2055,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_default()
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_from_err_code(unsigned short eCode, const char* pszFile, int32_t line, const char* pszInformation)
 {
     return new PoDoFo::PdfError(static_cast<PoDoFo::EPdfError>(eCode), static_cast<const char*>(pszFile), static_cast<int>(line), static_cast<const char*>(pszInformation));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_error_from_other(void* rhs)
-{
-    return new PoDoFo::PdfError(*static_cast<PoDoFo::PdfError*>(rhs));
 }
 
 PODOFO_API unsigned short PODOFO_API_CONVENTION po_do_fo_pdf_error_get_error_const(void* object_pointer)
@@ -2338,47 +2210,42 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_extension_delete(void* object
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_default(void* pParent, void* pDevice)
 {
-    return new PoDoFo::PdfFileStream(static_cast<PoDoFo::PdfObject*>(pParent), static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    return new PoDoFo::PdfFileStreamImpl(static_cast<PoDoFo::PdfObjectImpl*>(pParent)->get(), static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_set_encrypted(void* object_pointer, void* pEncrypt)
 {
-    PoDoFo::PdfFileStream* self = static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-    self->SetEncrypted(static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfFileStreamImpl* self = static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
+    (*self)->SetEncrypted(static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_write(void* object_pointer, void* pDevice, void* pEncrypt)
 {
-    PoDoFo::PdfFileStream* self = static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfFileStreamImpl* self = static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_get_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfFileStream* self = static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-    self->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfFileStreamImpl* self = static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_get_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfFileStream* self = static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-    self->GetCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfFileStreamImpl* self = static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfFileStream* self = static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfFileStreamImpl* self = static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFileStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfStream*>(static_cast<PoDoFo::PdfFileStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFileStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_tvec_filters_copy(void* object_pointer)
@@ -2413,91 +2280,91 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_tcivec_filters_delete(void* objec
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_filter_can_encode_const(void* object_pointer)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    return static_cast<uint8_t>(self->CanEncode());
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->CanEncode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_encode_const(void* object_pointer, const char* pInBuffer, int64_t lInLen, char** ppOutBuffer, void* plOutLen)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->Encode(static_cast<const char*>(pInBuffer), static_cast<PoDoFo::pdf_long>(lInLen), static_cast<char**>(ppOutBuffer), static_cast<Bcapi::PdfLong*>(plOutLen)->GetPointer());
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->Encode(static_cast<const char*>(pInBuffer), static_cast<PoDoFo::pdf_long>(lInLen), static_cast<char**>(ppOutBuffer), static_cast<Bcapi::PdfLongImpl*>(plOutLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_begin_encode(void* object_pointer, void* pOutput)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->BeginEncode(static_cast<PoDoFo::PdfOutputStream*>(pOutput));
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->BeginEncode(static_cast<PoDoFo::PdfOutputStreamImpl*>(pOutput)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_encode_block(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->EncodeBlock(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->EncodeBlock(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_end_encode(void* object_pointer)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->EndEncode();
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->EndEncode();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_filter_can_decode_const(void* object_pointer)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    return static_cast<uint8_t>(self->CanDecode());
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->CanDecode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_decode_const(void* object_pointer, const char* pInBuffer, int64_t lInLen, char** ppOutBuffer, void* plOutLen, void* pDecodeParms)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->Decode(static_cast<const char*>(pInBuffer), static_cast<PoDoFo::pdf_long>(lInLen), static_cast<char**>(ppOutBuffer), static_cast<Bcapi::PdfLong*>(plOutLen)->GetPointer(), static_cast<PoDoFo::PdfDictionary*>(pDecodeParms));
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->Decode(static_cast<const char*>(pInBuffer), static_cast<PoDoFo::pdf_long>(lInLen), static_cast<char**>(ppOutBuffer), static_cast<Bcapi::PdfLongImpl*>(plOutLen)->GetPointer(), static_cast<PoDoFo::PdfDictionary*>(pDecodeParms));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_begin_decode(void* object_pointer, void* pOutput, void* pDecodeParms)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->BeginDecode(static_cast<PoDoFo::PdfOutputStream*>(pOutput), static_cast<PoDoFo::PdfDictionary*>(pDecodeParms));
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->BeginDecode(static_cast<PoDoFo::PdfOutputStreamImpl*>(pOutput)->get(), static_cast<PoDoFo::PdfDictionary*>(pDecodeParms));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_decode_block(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->DecodeBlock(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->DecodeBlock(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_end_encode_1(void* object_pointer)
 {
-    PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    self->EndEncode();
+    PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    (*self)->EndEncode();
 }
 
 PODOFO_API signed char PODOFO_API_CONVENTION po_do_fo_pdf_filter_get_type_const(void* object_pointer)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    return static_cast<signed char>(self->GetType());
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    return static_cast<signed char>((*self)->GetType());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_filter_get_stream_const(void* object_pointer)
 {
-    const PoDoFo::PdfFilter* self = static_cast<PoDoFo::PdfFilter*>(object_pointer);
-    return self->GetStream();
+    const PoDoFo::PdfFilterImpl* self = static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
+    return (*self)->GetStream();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFilter*>(object_pointer);
+    delete static_cast<PoDoFo::PdfFilterImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_create_encode_stream(void* object_pointer, void* filters, void* pStream)
 {
     PoDoFo::PdfFilterFactory* self = static_cast<PoDoFo::PdfFilterFactory*>(object_pointer);
-    self->CreateEncodeStream(*static_cast<PoDoFo::TVecFilters*>(filters), static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    self->CreateEncodeStream(*static_cast<PoDoFo::TVecFilters*>(filters), static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_create_decode_stream(void* object_pointer, void* filters, void* pStream, void* pDictionary)
 {
     PoDoFo::PdfFilterFactory* self = static_cast<PoDoFo::PdfFilterFactory*>(object_pointer);
-    self->CreateDecodeStream(*static_cast<PoDoFo::TVecFilters*>(filters), static_cast<PoDoFo::PdfOutputStream*>(pStream), static_cast<PoDoFo::PdfDictionary*>(pDictionary));
+    self->CreateDecodeStream(*static_cast<PoDoFo::TVecFilters*>(filters), static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get(), static_cast<PoDoFo::PdfDictionary*>(pDictionary));
 }
 
 PODOFO_API signed char PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_filter_name_to_type(void* object_pointer, void* name, uint8_t bSupportShortNames)
@@ -2515,7 +2382,7 @@ PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_filter_
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_create_filter_list(void* object_pointer, void* pObject)
 {
     PoDoFo::PdfFilterFactory* self = static_cast<PoDoFo::PdfFilterFactory*>(object_pointer);
-    return new PoDoFo::TVecFilters(self->CreateFilterList(static_cast<PoDoFo::PdfObject*>(pObject)));
+    return new PoDoFo::TVecFilters(self->CreateFilterList(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_copy(void* object_pointer)
@@ -2530,190 +2397,170 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_filter_factory_delete(void* o
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_close(void* object_pointer)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_tell_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int64_t>(self->Tell());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Tell());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_get_char_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int32_t>(self->GetChar());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetChar());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_look_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int32_t>(self->Look());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->Look());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_seek(void* object_pointer, int64_t off, char dir)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Seek(static_cast<std::streamoff>(off), static_cast<std::ios_base::seekdir>(dir));
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Seek(static_cast<std::streamoff>(off), static_cast<std::ios_base::seekdir>(dir));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_read(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<std::streamsize>(lLen)));
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<std::streamsize>(lLen)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_eof_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->Eof());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Eof());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_bad_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->Bad());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Bad());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_clear_const(void* object_pointer, unsigned state)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Clear(static_cast<std::ios_base::iostate>(state));
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Clear(static_cast<std::ios_base::iostate>(state));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_is_seekable_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSeekable());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSeekable());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
+    delete static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_stream_read(void* object_pointer, char* pBuffer, int64_t lLen, void* pTotalLeft)
 {
-    PoDoFo::PdfInputStream* self = static_cast<PoDoFo::PdfInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLong*>(pTotalLeft)->GetPointer()));
+    PoDoFo::PdfInputStreamImpl* self = static_cast<PoDoFo::PdfInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLongImpl*>(pTotalLeft)->GetPointer()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfInputStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfInputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_file_input_stream_read(void* object_pointer, char* pBuffer, int64_t lLen, void* p)
 {
-    PoDoFo::PdfFileInputStream* self = static_cast<PoDoFo::PdfFileInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLong*>(p)->GetPointer()));
+    PoDoFo::PdfFileInputStreamImpl* self = static_cast<PoDoFo::PdfFileInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLongImpl*>(p)->GetPointer()));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_file_input_stream_get_file_length(void* object_pointer)
 {
-    PoDoFo::PdfFileInputStream* self = static_cast<PoDoFo::PdfFileInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetFileLength());
+    PoDoFo::PdfFileInputStreamImpl* self = static_cast<PoDoFo::PdfFileInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFileLength());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_input_stream_get_handle(void* object_pointer)
 {
-    PoDoFo::PdfFileInputStream* self = static_cast<PoDoFo::PdfFileInputStream*>(object_pointer);
-    return static_cast<void*>(self->GetHandle());
+    PoDoFo::PdfFileInputStreamImpl* self = static_cast<PoDoFo::PdfFileInputStreamImpl*>(object_pointer);
+    return static_cast<void*>((*self)->GetHandle());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_input_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFileInputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_input_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfInputStream*>(static_cast<PoDoFo::PdfFileInputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFileInputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_memory_input_stream_read(void* object_pointer, char* pBuffer, int64_t lLen, void* p)
 {
-    PoDoFo::PdfMemoryInputStream* self = static_cast<PoDoFo::PdfMemoryInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLong*>(p)->GetPointer()));
+    PoDoFo::PdfMemoryInputStreamImpl* self = static_cast<PoDoFo::PdfMemoryInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLongImpl*>(p)->GetPointer()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_memory_input_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMemoryInputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_memory_input_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfInputStream*>(static_cast<PoDoFo::PdfMemoryInputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMemoryInputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_device_input_stream_read(void* object_pointer, char* pBuffer, int64_t lLen, void* p)
 {
-    PoDoFo::PdfDeviceInputStream* self = static_cast<PoDoFo::PdfDeviceInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLong*>(p)->GetPointer()));
+    PoDoFo::PdfDeviceInputStreamImpl* self = static_cast<PoDoFo::PdfDeviceInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLongImpl*>(p)->GetPointer()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_device_input_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDeviceInputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_device_input_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfInputStream*>(static_cast<PoDoFo::PdfDeviceInputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfDeviceInputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_write(void* object_pointer, void* pDevice, void* pEncrypt)
 {
-    PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_get_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    self->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_get_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    self->GetCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_get_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    return static_cast<const char*>(self->Get());
+    const PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->Get());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_flate_compress(void* object_pointer)
 {
-    PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    self->FlateCompress();
+    PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    (*self)->FlateCompress();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_uncompress(void* object_pointer)
 {
-    PoDoFo::PdfMemStream* self = static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-    self->Uncompress();
+    PoDoFo::PdfMemStreamImpl* self = static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
+    (*self)->Uncompress();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMemStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfStream*>(static_cast<PoDoFo::PdfMemStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMemStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_default()
@@ -2729,11 +2576,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_from_char(const char* p
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_from_char_and_length(const char* pszName, int64_t lLen)
 {
     return new PoDoFo::PdfName(static_cast<const char*>(pszName), static_cast<long>(lLen));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_from_other(void* rhs)
-{
-    return new PoDoFo::PdfName(*static_cast<PoDoFo::PdfName*>(rhs));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_from_escaped(void* object_pointer, const char* sName)
@@ -2757,7 +2599,7 @@ PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_name_get_escaped_name_
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_name_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfName* self = static_cast<PoDoFo::PdfName*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_name_get_name_const(void* object_pointer)
@@ -2784,7 +2626,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_name_delete(void* object_poin
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_name_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfName*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfName*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_object_id_list_copy(void* object_pointer)
@@ -2799,7 +2641,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_object_id_list_delete(void* objec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_stream_parser_object_default(void* pParser, void* pVecObjects, void* rBuffer, void* pEncrypt)
 {
-    return new PoDoFo::PdfObjectStreamParserObject(static_cast<PoDoFo::PdfParserObject*>(pParser), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), *static_cast<PoDoFo::PdfRefCountedBuffer*>(rBuffer), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    return new PoDoFo::PdfObjectStreamParserObject(static_cast<PoDoFo::PdfParserObjectImpl*>(pParser)->get(), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), *static_cast<PoDoFo::PdfRefCountedBuffer*>(rBuffer), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_stream_parser_object_parse(void* object_pointer, void* list)
@@ -2820,54 +2662,54 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_stream_parser_object_d
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->GetLength());
+    const PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_print(void* object_pointer, const char* pszFormat)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Print(static_cast<const char*>(pszFormat));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Print(static_cast<const char*>(pszFormat));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_write(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Write(static_cast<char*>(pBuffer), static_cast<size_t>(lLen));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Write(static_cast<char*>(pBuffer), static_cast<size_t>(lLen));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_read(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->Read(static_cast<char*>(pBuffer), static_cast<size_t>(lLen)));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<size_t>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_seek(void* object_pointer, size_t offset)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Seek(static_cast<size_t>(offset));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Seek(static_cast<size_t>(offset));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_tell_const(void* object_pointer)
 {
-    const PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->Tell());
+    const PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->Tell());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_flush(void* object_pointer)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Flush();
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Flush();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
+    delete static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_immediate_writer_default(void* pDevice, void* pVecObjects, void* pTrailer, unsigned char eVersion, void* pEncrypt, unsigned char eWriteMode)
 {
-    return new PoDoFo::PdfImmediateWriter(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObject*>(pTrailer), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
+    return new PoDoFo::PdfImmediateWriter(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get(), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_immediate_writer_get_write_mode_const(void* object_pointer)
@@ -2894,131 +2736,111 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_immediate_writer_delete(void*
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_write_1(void* object_pointer, const char* s)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(s)));
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(s)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_close(void* object_pointer)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_file_output_stream_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfFileOutputStream* self = static_cast<PoDoFo::PdfFileOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfFileOutputStreamImpl* self = static_cast<PoDoFo::PdfFileOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_output_stream_close(void* object_pointer)
 {
-    PoDoFo::PdfFileOutputStream* self = static_cast<PoDoFo::PdfFileOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfFileOutputStreamImpl* self = static_cast<PoDoFo::PdfFileOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_file_output_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFileOutputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_output_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfOutputStream*>(static_cast<PoDoFo::PdfFileOutputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFileOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfMemoryOutputStream* self = static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfMemoryOutputStreamImpl* self = static_cast<PoDoFo::PdfMemoryOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_close(void* object_pointer)
 {
-    PoDoFo::PdfMemoryOutputStream* self = static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfMemoryOutputStreamImpl* self = static_cast<PoDoFo::PdfMemoryOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API char* PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_take_buffer(void* object_pointer)
 {
-    PoDoFo::PdfMemoryOutputStream* self = static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer);
-    return static_cast<char*>(self->TakeBuffer());
+    PoDoFo::PdfMemoryOutputStreamImpl* self = static_cast<PoDoFo::PdfMemoryOutputStreamImpl*>(object_pointer);
+    return static_cast<char*>((*self)->TakeBuffer());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemoryOutputStream* self = static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfMemoryOutputStreamImpl* self = static_cast<PoDoFo::PdfMemoryOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_memory_output_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfOutputStream*>(static_cast<PoDoFo::PdfMemoryOutputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMemoryOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_device_output_stream_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfDeviceOutputStream* self = static_cast<PoDoFo::PdfDeviceOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfDeviceOutputStreamImpl* self = static_cast<PoDoFo::PdfDeviceOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_device_output_stream_close(void* object_pointer)
 {
-    PoDoFo::PdfDeviceOutputStream* self = static_cast<PoDoFo::PdfDeviceOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfDeviceOutputStreamImpl* self = static_cast<PoDoFo::PdfDeviceOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_device_output_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDeviceOutputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_device_output_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfOutputStream*>(static_cast<PoDoFo::PdfDeviceOutputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfDeviceOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_buffer_output_stream_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfBufferOutputStream* self = static_cast<PoDoFo::PdfBufferOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfBufferOutputStreamImpl* self = static_cast<PoDoFo::PdfBufferOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_buffer_output_stream_close(void* object_pointer)
 {
-    PoDoFo::PdfBufferOutputStream* self = static_cast<PoDoFo::PdfBufferOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfBufferOutputStreamImpl* self = static_cast<PoDoFo::PdfBufferOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_buffer_output_stream_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfBufferOutputStream* self = static_cast<PoDoFo::PdfBufferOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfBufferOutputStreamImpl* self = static_cast<PoDoFo::PdfBufferOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_buffer_output_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfBufferOutputStream*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_buffer_output_stream_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfOutputStream*>(static_cast<PoDoFo::PdfBufferOutputStream*>(object_pointer));
+    delete static_cast<PoDoFo::PdfBufferOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_tvec_offsets_raw_ptr_delete(void* object_pointer)
@@ -3028,202 +2850,192 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_tvec_offsets_raw_ptr_delete(void*
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_parse_file(void* object_pointer, const char* pszFileName, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(static_cast<const char*>(pszFileName), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<const char*>(pszFileName), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_parse_file_1(void* object_pointer, const char* pszFileName, int64_t lLen, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(static_cast<const char*>(pszFileName), static_cast<long>(lLen), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<const char*>(pszFileName), static_cast<long>(lLen), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_parse_file_2(void* object_pointer, void* rDevice, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_quick_encrypted_check(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->QuickEncryptedCheck(static_cast<const char*>(pszFilename)));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->QuickEncryptedCheck(static_cast<const char*>(pszFilename)));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_number_of_incremental_updates_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumberOfIncrementalUpdates());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumberOfIncrementalUpdates());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfVecObjects*>(self->GetObjects());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_pdf_version_string_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<const char*>(self->GetPdfVersionString());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetPdfVersionString());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_trailer_const(void* object_pointer)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_trailer(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetTrailer());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetTrailer());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_load_on_demand_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->GetLoadOnDemand());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetLoadOnDemand());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_file_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<size_t>(self->GetFileSize());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->GetFileSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_encrypt_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncrypt*>(self->GetEncrypt());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->GetEncrypt());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_take_encrypt(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return self->TakeEncrypt();
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->TakeEncrypt());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_set_password(void* object_pointer, const char* sPassword)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetPassword(static_cast<const char*>(sPassword));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetPassword(static_cast<const char*>(sPassword));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_is_strict_parsing_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->IsStrictParsing());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsStrictParsing());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_set_strict_parsing(void* object_pointer, uint8_t bStrict)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetStrictParsing(static_cast<bool>(bStrict));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetStrictParsing(static_cast<bool>(bStrict));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_xref_offset(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int64_t>(self->GetXRefOffset());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetXRefOffset());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_has_xref_stream(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->HasXRefStream());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasXRefStream());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_ignore_broken_objects(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->GetIgnoreBrokenObjects());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetIgnoreBrokenObjects());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_set_ignore_broken_objects(void* object_pointer, uint8_t ignore_broken_objects)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetIgnoreBrokenObjects(static_cast<bool>(ignore_broken_objects));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetIgnoreBrokenObjects(static_cast<bool>(ignore_broken_objects));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_get_max_object_count_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int64_t>(self->GetMaxObjectCount());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetMaxObjectCount());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_set_max_object_count(void* object_pointer, int64_t max_object_count)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetMaxObjectCount(static_cast<long>(max_object_count));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetMaxObjectCount(static_cast<long>(max_object_count));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfParser*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfTokenizer*>(static_cast<PoDoFo::PdfParser*>(object_pointer));
+    delete static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_parse_file(void* object_pointer, void* pEncrypt, uint8_t bIsTrailer)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->ParseFile(static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<bool>(bIsTrailer));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), static_cast<bool>(bIsTrailer));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_has_stream_to_parse_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<uint8_t>(self->HasStreamToParse());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasStreamToParse());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_is_load_on_demand_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLoadOnDemand());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLoadOnDemand());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_set_load_on_demand(void* object_pointer, uint8_t bDelayed)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->SetLoadOnDemand(static_cast<bool>(bDelayed));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->SetLoadOnDemand(static_cast<bool>(bDelayed));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_set_object_number(void* object_pointer, uint32_t nObjNo)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->SetObjectNumber(static_cast<unsigned>(nObjNo));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->SetObjectNumber(static_cast<unsigned>(nObjNo));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_free_object_memory(void* object_pointer, uint8_t bForce)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->FreeObjectMemory(static_cast<bool>(bForce));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(static_cast<bool>(bForce));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_get_offset_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetOffset());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetOffset());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfTokenizer*>(static_cast<PoDoFo::PdfParserObject*>(object_pointer));
+    delete static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_rect_default()
@@ -3239,11 +3051,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_rect_from_params(double left
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_rect_from_pdf_array(void* inArray)
 {
     return new PoDoFo::PdfRect(*static_cast<PoDoFo::PdfArray*>(inArray));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_rect_from_other(void* rhs)
-{
-    return new PoDoFo::PdfRect(*static_cast<PoDoFo::PdfRect*>(rhs));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_rect_to_variant_const(void* object_pointer, void* var)
@@ -3343,11 +3150,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_from_size
     return new PoDoFo::PdfRefCountedBuffer(static_cast<size_t>(lSize));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_from_other(void* rhs)
-{
-    return new PoDoFo::PdfRefCountedBuffer(*static_cast<PoDoFo::PdfRefCountedBuffer*>(rhs));
-}
-
 PODOFO_API char* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_get_buffer_const(void* object_pointer)
 {
     const PoDoFo::PdfRefCountedBuffer* self = static_cast<PoDoFo::PdfRefCountedBuffer*>(object_pointer);
@@ -3405,12 +3207,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_input_device_fro
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_input_device_from_device(void* pDevice)
 {
-    return new PoDoFo::PdfRefCountedInputDevice(static_cast<PoDoFo::PdfInputDevice*>(pDevice));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_input_device_from_other(void* rhs)
-{
-    return new PoDoFo::PdfRefCountedInputDevice(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rhs));
+    return new PoDoFo::PdfRefCountedInputDevice(static_cast<PoDoFo::PdfInputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_input_device_copy(void* object_pointer)
@@ -3433,11 +3230,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_reference_from_object(uint32
     return new PoDoFo::PdfReference(static_cast<PoDoFo::pdf_objnum>(bObjNo), static_cast<PoDoFo::pdf_gennum>(nGenerationNo));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_reference_from_other(void* rhs)
-{
-    return new PoDoFo::PdfReference(*static_cast<PoDoFo::PdfReference*>(rhs));
-}
-
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_reference_to_string_const(void* object_pointer)
 {
     const PoDoFo::PdfReference* self = static_cast<PoDoFo::PdfReference*>(object_pointer);
@@ -3447,7 +3239,7 @@ PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_reference_to_string_co
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_reference_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfReference* self = static_cast<PoDoFo::PdfReference*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_reference_set_object_number(void* object_pointer, uint32_t o)
@@ -3492,126 +3284,126 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_reference_delete(void* object
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_reference_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfReference*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfReference*>(object_pointer));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_write(void* object_pointer, void* pDevice, void* pEncrypt)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set(void* object_pointer, const char* szBuffer, int64_t lLen, void* vecFilters)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set_1(void* object_pointer, const char* szBuffer, int64_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set_2(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<PoDoFo::PdfInputStream*>(pStream));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set_3(void* object_pointer, void* pStream, void* vecFilters)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<PoDoFo::PdfInputStream*>(pStream), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set_4(void* object_pointer, const char* pszString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(pszString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(pszString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_set_raw_data(void* object_pointer, void* pStream, int64_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->SetRawData(static_cast<PoDoFo::PdfInputStream*>(pStream), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->SetRawData(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_begin_append(void* object_pointer, uint8_t bClearExisting)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->BeginAppend(static_cast<bool>(bClearExisting));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->BeginAppend(static_cast<bool>(bClearExisting));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_begin_append_1(void* object_pointer, void* vecFilters, uint8_t bClearExisting, uint8_t bDeleteExisting)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->BeginAppend(*static_cast<PoDoFo::TVecFilters*>(vecFilters), static_cast<bool>(bClearExisting), static_cast<bool>(bDeleteExisting));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->BeginAppend(*static_cast<PoDoFo::TVecFilters*>(vecFilters), static_cast<bool>(bClearExisting), static_cast<bool>(bDeleteExisting));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_append(void* object_pointer, const char* pszString, size_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*>(pszString), static_cast<size_t>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*>(pszString), static_cast<size_t>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_append_1(void* object_pointer, const char* pszString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*>(pszString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*>(pszString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_append_2(void* object_pointer, const char*& sString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*&>(sString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*&>(sString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_end_append(void* object_pointer)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->EndAppend();
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->EndAppend();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_stream_is_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAppending());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAppending());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_stream_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_get_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_get_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_get_filtered_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetFilteredCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetFilteredCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_get_filtered_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetFilteredCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetFilteredCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_default()
@@ -3621,17 +3413,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_default()
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_char(const char* pszString, void* pEncoding)
 {
-    return new PoDoFo::PdfString(static_cast<const char*>(pszString), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    return new PoDoFo::PdfString(static_cast<const char*>(pszString), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_string(void* sString, void* pEncoding)
 {
-    return new PoDoFo::PdfString(static_cast<Bcapi::String*>(sString)->GetString(), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    return new PoDoFo::PdfString(static_cast<Bcapi::String*>(sString)->GetString(), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_hex_str(const char* pszString, int64_t lLen, uint8_t bHex, void* pEncoding)
 {
-    return new PoDoFo::PdfString(static_cast<const char*>(pszString), static_cast<PoDoFo::pdf_long>(lLen), static_cast<bool>(bHex), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    return new PoDoFo::PdfString(static_cast<const char*>(pszString), static_cast<PoDoFo::pdf_long>(lLen), static_cast<bool>(bHex), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_utf8(const unsigned char* pszStringUtf8)
@@ -3654,15 +3446,10 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_utf16be_and_leng
     return new PoDoFo::PdfString(static_cast<const PoDoFo::pdf_utf16be*>(pszStringUtf16), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_from_other(void* rhs)
-{
-    return new PoDoFo::PdfString(*static_cast<PoDoFo::PdfString*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_string_set_hex_data(void* object_pointer, const char* pszHex, int64_t lLen, void* pEncrypt)
 {
     PoDoFo::PdfString* self = static_cast<PoDoFo::PdfString*>(object_pointer);
-    self->SetHexData(static_cast<const char*>(pszHex), static_cast<PoDoFo::pdf_long>(lLen), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->SetHexData(static_cast<const char*>(pszHex), static_cast<PoDoFo::pdf_long>(lLen), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_string_is_valid_const(void* object_pointer)
@@ -3722,7 +3509,7 @@ PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_string_get_character_lengt
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_string_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfString* self = static_cast<PoDoFo::PdfString*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_to_unicode_const(void* object_pointer)
@@ -3773,112 +3560,112 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_string_delete(void* object_po
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_string_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfString*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfString*>(object_pointer));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_get_next_token(void* object_pointer, const char*& pszToken, char* peType)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->GetNextToken(static_cast<const char*&>(pszToken), reinterpret_cast<PoDoFo::EPdfTokenType*>(peType)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetNextToken(static_cast<const char*&>(pszToken), reinterpret_cast<PoDoFo::EPdfTokenType*>(peType)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_is_next_token(void* object_pointer, const char* pszToken)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->IsNextToken(static_cast<const char*>(pszToken)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsNextToken(static_cast<const char*>(pszToken)));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_get_next_number(void* object_pointer)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<int64_t>(self->GetNextNumber());
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetNextNumber());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_get_next_variant(void* object_pointer, void* rVariant, void* pEncrypt)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    self->GetNextVariant(*static_cast<PoDoFo::PdfVariant*>(rVariant), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    (*self)->GetNextVariant(*static_cast<PoDoFo::PdfVariant*>(rVariant), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_is_whitespace(void* object_pointer, const unsigned char ch)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->IsWhitespace(static_cast<const unsigned char>(ch)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsWhitespace(static_cast<const unsigned char>(ch)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_is_delimiter(void* object_pointer, const unsigned char ch)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDelimiter(static_cast<const unsigned char>(ch)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDelimiter(static_cast<const unsigned char>(ch)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_is_regular(void* object_pointer, const unsigned char ch)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->IsRegular(static_cast<const unsigned char>(ch)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsRegular(static_cast<const unsigned char>(ch)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_is_printable(void* object_pointer, const unsigned char ch)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintable(static_cast<const unsigned char>(ch)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintable(static_cast<const unsigned char>(ch)));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_get_hex_value(void* object_pointer, const unsigned char ch)
 {
-    PoDoFo::PdfTokenizer* self = static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
-    return static_cast<int32_t>(self->GetHexValue(static_cast<const unsigned char>(ch)));
+    PoDoFo::PdfTokenizerImpl* self = static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetHexValue(static_cast<const unsigned char>(ch)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfTokenizer*>(object_pointer);
+    delete static_cast<PoDoFo::PdfTokenizerImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_write_object(void* object_pointer, void* pObject)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfObject*>(pObject));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->WriteObject(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_parent_destructed(void* object_pointer)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->ParentDestructed();
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->ParentDestructed();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_begin_append_stream(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->BeginAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->BeginAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_end_append_stream(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->EndAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->EndAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_finish(void* object_pointer)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->Finish();
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->Finish();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
+    delete static_cast<PoDoFo::ObserverImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_stream_factory_create_stream(void* object_pointer, void* pParent)
 {
-    PoDoFo::PdfVecObjects::StreamFactory* self = static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(object_pointer);
-    return self->CreateStream(static_cast<PoDoFo::PdfObject*>(pParent));
+    PoDoFo::StreamFactoryImpl* self = static_cast<PoDoFo::StreamFactoryImpl*>(object_pointer);
+    return (*self)->CreateStream(static_cast<PoDoFo::PdfObjectImpl*>(pParent)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_stream_factory_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(object_pointer);
+    delete static_cast<PoDoFo::StreamFactoryImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_tpdf_reference_set_delete(void* object_pointer)
@@ -3964,7 +3751,7 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_object_coun
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_object_const(void* object_pointer, void* ref)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetObject(*static_cast<PoDoFo::PdfReference*>(ref));
+    return new PoDoFo::PdfObjectImpl(self->GetObject(*static_cast<PoDoFo::PdfReference*>(ref)));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_index_const(void* object_pointer, void* ref)
@@ -3976,25 +3763,25 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_index_const
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_remove_object(void* object_pointer, void* ref, uint8_t bMarkAsFree)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->RemoveObject(*static_cast<PoDoFo::PdfReference*>(ref), static_cast<bool>(bMarkAsFree));
+    return new PoDoFo::PdfObjectImpl(self->RemoveObject(*static_cast<PoDoFo::PdfReference*>(ref), static_cast<bool>(bMarkAsFree)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_remove_object_1(void* object_pointer, void* it)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->RemoveObject(*static_cast<PoDoFo::TIVecObjects*>(it));
+    return new PoDoFo::PdfObjectImpl(self->RemoveObject(*static_cast<PoDoFo::TIVecObjects*>(it)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_create_object(void* object_pointer, const char* pszType)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateObject(static_cast<const char*>(pszType));
+    return new PoDoFo::PdfObjectImpl(self->CreateObject(static_cast<const char*>(pszType)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_create_object_1(void* object_pointer, void* rVariant)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateObject(*static_cast<PoDoFo::PdfVariant*>(rVariant));
+    return new PoDoFo::PdfObjectImpl(self->CreateObject(*static_cast<PoDoFo::PdfVariant*>(rVariant)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_add_free_object(void* object_pointer, void* rReference)
@@ -4012,19 +3799,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_free_objects
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_renumber_objects(void* object_pointer, void* pTrailer, void* pNotDelete, uint8_t bDoGarbageCollection)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->RenumberObjects(static_cast<PoDoFo::PdfObject*>(pTrailer), static_cast<PoDoFo::TPdfReferenceSet*>(pNotDelete), static_cast<bool>(bDoGarbageCollection));
+    self->RenumberObjects(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get(), static_cast<PoDoFo::TPdfReferenceSet*>(pNotDelete), static_cast<bool>(bDoGarbageCollection));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_push_back(void* object_pointer, void* pObj)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->push_back(static_cast<PoDoFo::PdfObject*>(pObj));
+    self->push_back(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_insert_sorted(void* object_pointer, void* pObj)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->insert_sorted(static_cast<PoDoFo::PdfObject*>(pObj));
+    self->insert_sorted(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_sort(void* object_pointer)
@@ -4042,43 +3829,43 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_reserve(void* obj
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_object_dependencies_const(void* object_pointer, void* pObj, void* pList)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->GetObjectDependencies(static_cast<PoDoFo::PdfObject*>(pObj), static_cast<PoDoFo::TPdfReferenceList*>(pList));
+    self->GetObjectDependencies(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), static_cast<PoDoFo::TPdfReferenceList*>(pList));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_attach(void* object_pointer, void* pObserver)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->Attach(static_cast<PoDoFo::PdfVecObjects::Observer*>(pObserver));
+    self->Attach(static_cast<PoDoFo::ObserverImpl*>(pObserver)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_detach(void* object_pointer, void* pObserver)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->Detach(static_cast<PoDoFo::PdfVecObjects::Observer*>(pObserver));
+    self->Detach(static_cast<PoDoFo::ObserverImpl*>(pObserver)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_set_stream_factory(void* object_pointer, void* pFactory)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->SetStreamFactory(static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(pFactory));
+    self->SetStreamFactory(static_cast<PoDoFo::StreamFactoryImpl*>(pFactory)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_create_stream(void* object_pointer, void* pParent)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateStream(static_cast<PoDoFo::PdfObject*>(pParent));
+    return self->CreateStream(static_cast<PoDoFo::PdfObjectImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_create_stream_1(void* object_pointer, void* rhs)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateStream(*static_cast<PoDoFo::PdfStream*>(rhs));
+    return self->CreateStream(*static_cast<PoDoFo::PdfStreamImpl*>(rhs)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_write_object(void* object_pointer, void* pObject)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfObject*>(pObject));
+    self->WriteObject(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_finish(void* object_pointer)
@@ -4090,13 +3877,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_finish(void* obje
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_begin_append_stream(void* object_pointer, void* pStream)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->BeginAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    self->BeginAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_end_append_stream(void* object_pointer, void* pStream)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->EndAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    self->EndAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_begin(void* object_pointer)
@@ -4126,13 +3913,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_end_const(void* 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_back(void* object_pointer)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetBack();
+    return new PoDoFo::PdfObjectImpl(self->GetBack());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_collect_garbage(void* object_pointer, void* pTrailer)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->CollectGarbage(static_cast<PoDoFo::PdfObject*>(pTrailer));
+    self->CollectGarbage(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_next_subset_prefix(void* object_pointer)
@@ -4150,13 +3937,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_set_object_count(
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_parent_document_const(void* object_pointer)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetParentDocument();
+    return new PoDoFo::PdfDocumentImpl(self->GetParentDocument());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_set_parent_document(void* object_pointer, void* parent_document)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->SetParentDocument(static_cast<PoDoFo::PdfDocument*>(parent_document));
+    self->SetParentDocument(static_cast<PoDoFo::PdfDocumentImpl*>(parent_document)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_get_can_reuse_object_numbers_const(void* object_pointer)
@@ -4183,12 +3970,12 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_delete(void* obje
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_writer_from_parser(void* pParser)
 {
-    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfParser*>(pParser));
+    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfParserImpl*>(pParser)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_writer_new(void* pVecObjects, void* pTrailer)
 {
-    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObject*>(pTrailer));
+    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_write(void* object_pointer, const char* pszFilename)
@@ -4200,19 +3987,19 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_write(void* object_poi
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_write_1(void* object_pointer, void* pDevice)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_write_update(void* object_pointer, void* pDevice, void* pSourceInputDevice, uint8_t bRewriteXRefTable)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfInputDevice*>(pSourceInputDevice), static_cast<bool>(bRewriteXRefTable));
+    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfInputDeviceImpl*>(pSourceInputDevice)->get(), static_cast<bool>(bRewriteXRefTable));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_set_encrypted(void* object_pointer, void* rEncrypt)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->SetEncrypted(*static_cast<PoDoFo::PdfEncrypt*>(rEncrypt));
+    self->SetEncrypted(*static_cast<PoDoFo::PdfEncryptImpl*>(rEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_writer_get_encrypted(void* object_pointer)
@@ -4230,19 +4017,19 @@ PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_writer_get_pdf_version
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_get_byte_offset(void* object_pointer, void* pObject, void* pulOffset)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->GetByteOffset(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<Bcapi::PdfLong*>(pulOffset)->GetPointer());
+    self->GetByteOffset(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<Bcapi::PdfLongImpl*>(pulOffset)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_write_to_buffer(void* object_pointer, char** ppBuffer, void* pulLen)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->WriteToBuffer(static_cast<char**>(ppBuffer), static_cast<Bcapi::PdfLong*>(pulLen)->GetPointer());
+    self->WriteToBuffer(static_cast<char**>(ppBuffer), static_cast<Bcapi::PdfLongImpl*>(pulLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_fill_trailer_object(void* object_pointer, void* pTrailer, int64_t lSize, uint8_t bOnlySizeKey)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->FillTrailerObject(static_cast<PoDoFo::PdfObject*>(pTrailer), static_cast<PoDoFo::pdf_long>(lSize), static_cast<bool>(bOnlySizeKey));
+    self->FillTrailerObject(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get(), static_cast<PoDoFo::pdf_long>(lSize), static_cast<bool>(bOnlySizeKey));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_writer_get_write_mode_const(void* object_pointer)
@@ -4341,7 +4128,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_xref_add_object(void* object_
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_xref_write(void* object_pointer, void* pDevice)
 {
     PoDoFo::PdfXRef* self = static_cast<PoDoFo::PdfXRef*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_xref_get_size_const(void* object_pointer)
@@ -4434,23 +4221,23 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_xref_stream_parser_object_del
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xref_stream_parser_object_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfParserObject*>(static_cast<PoDoFo::PdfXRefStreamParserObject*>(object_pointer));
+    return new PoDoFo::PdfParserObjectImpl(static_cast<PoDoFo::PdfXRefStreamParserObject*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_default(void* pDoc, unsigned char eDefaultAppearance)
 {
-    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocument*>(pDoc), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get(), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_from_object(void* pDoc, void* pObject, unsigned char eDefaultAppearance)
 {
-    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocument*>(pDoc), static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_get_document(void* object_pointer)
 {
     PoDoFo::PdfAcroForm* self = static_cast<PoDoFo::PdfAcroForm*>(object_pointer);
-    return self->GetDocument();
+    return new PoDoFo::PdfDocumentImpl(self->GetDocument());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_get_need_appearances_const(void* object_pointer)
@@ -4482,70 +4269,65 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_cast_to_base(void*
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_action_has_script_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return static_cast<uint8_t>(self->HasScript());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasScript());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_action_get_type_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return static_cast<unsigned char>(self->GetType());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetType());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_add_to_dictionary_const(void* object_pointer, void* dictionary)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(dictionary));
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(dictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_get_uri_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetURI());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetURI());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_set_uri(void* object_pointer, void* uri)
 {
-    PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->SetURI(*static_cast<PoDoFo::PdfString*>(uri));
+    PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->SetURI(*static_cast<PoDoFo::PdfString*>(uri));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_get_script_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetScript());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetScript());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_set_script(void* object_pointer, void* script)
 {
-    PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->SetScript(*static_cast<PoDoFo::PdfString*>(script));
+    PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->SetScript(*static_cast<PoDoFo::PdfString*>(script));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfAction*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfAction*>(object_pointer));
+    delete static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_default(void* pPage, unsigned char eAnnot, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfAnnotation>(eAnnot), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfAnnotation>(eAnnot), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfVecObjects*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_from_object(void* pObject, void* pPage)
 {
-    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfPage*>(pPage));
+    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_appearance_stream(void* object_pointer, void* pObject, unsigned char eAppearance, void* state)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
+    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_annotation_has_appearance_stream_const(void* object_pointer)
@@ -4560,7 +4342,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_rect_const(vo
     return new PoDoFo::PdfRect(self->GetRect());
 }
 
-PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_border_style(void* object_pointer, double dHCorner, double dVCorner, double dWidth, void* rStrokeStyle)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_border_style(void* object_pointer, double dHCorner, double dVCorner, double dWidth)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetBorderStyle(static_cast<double>(dHCorner), static_cast<double>(dVCorner), static_cast<double>(dWidth));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_border_style_1(void* object_pointer, double dHCorner, double dVCorner, double dWidth, void* rStrokeStyle)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
     self->SetBorderStyle(static_cast<double>(dHCorner), static_cast<double>(dVCorner), static_cast<double>(dWidth), *static_cast<PoDoFo::PdfArray*>(rStrokeStyle));
@@ -4569,7 +4357,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_border_style(v
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_destination_const(void* object_pointer, void* pDoc)
 {
     const PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    return new PoDoFo::PdfDestination(self->GetDestination(static_cast<PoDoFo::PdfDocument*>(pDoc)));
+    return new PoDoFo::PdfDestination(self->GetDestination(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_destination(void* object_pointer, void* rDestination)
@@ -4606,6 +4394,24 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_color(void* ob
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
     self->SetColor(static_cast<double>(r), static_cast<double>(g), static_cast<double>(b));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_color_1(void* object_pointer, double c, double m, double y, double k)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor(static_cast<double>(c), static_cast<double>(m), static_cast<double>(y), static_cast<double>(k));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_color_2(void* object_pointer, double gray)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor(static_cast<double>(gray));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_color_3(void* object_pointer)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor();
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_type_const(void* object_pointer)
@@ -4665,7 +4471,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_action_const(
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_action(void* object_pointer, void* action)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    self->SetAction(*static_cast<PoDoFo::PdfAction*>(action));
+    self->SetAction(*static_cast<PoDoFo::PdfActionImpl*>(action)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_open_const(void* object_pointer)
@@ -4683,7 +4489,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_open(void* obj
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_get_file_attachement_const(void* object_pointer)
 {
     const PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    return self->GetFileAttachement();
+    return static_cast<PoDoFo::PdfFileSpec*>(self->GetFileAttachement());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_set_file_attachement(void* object_pointer, void* file_attachement)
@@ -4721,65 +4527,60 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_cast_to_base(void
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_convert_to_unicode_const(void* object_pointer, void* rEncodedString, void* pFont)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_add_to_dictionary_const(void* object_pointer, void* rDictionary)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfRefCountedBuffer((*self)->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_is_auto_delete_const(void* object_pointer)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAutoDelete());
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAutoDelete());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_is_single_byte_encoding_const(void* object_pointer)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSingleByteEncoding());
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSingleByteEncoding());
 }
 
 PODOFO_API uint16_t PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_get_char_code_const(void* object_pointer, int32_t nIndex)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return static_cast<uint16_t>(self->GetCharCode(static_cast<int>(nIndex)));
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return static_cast<uint16_t>((*self)->GetCharCode(static_cast<int>(nIndex)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_get_id_const(void* object_pointer)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetID());
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetID());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_get_base_encoding_const(void* object_pointer)
 {
-    const PoDoFo::PdfCMapEncoding* self = static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GetBaseEncoding());
+    const PoDoFo::PdfCMapEncodingImpl* self = static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfEncodingImpl((*self)->GetBaseEncoding());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_cmap_encoding_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfEncoding*>(static_cast<PoDoFo::PdfCMapEncoding*>(object_pointer));
+    delete static_cast<PoDoFo::PdfCMapEncodingImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_default(void* pParent)
 {
-    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_from_objects(void* pParent)
@@ -4789,24 +4590,24 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_from_objects(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_from_object(void* inObj)
 {
-    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfObject*>(inObj));
+    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfObjectImpl*>(inObj)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_from_page(void* pParent)
 {
-    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfPage*>(pParent));
+    return new PoDoFo::PdfContents(static_cast<PoDoFo::PdfPageImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_get_contents_const(void* object_pointer)
 {
     const PoDoFo::PdfContents* self = static_cast<PoDoFo::PdfContents*>(object_pointer);
-    return self->GetContents();
+    return new PoDoFo::PdfObjectImpl(self->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_get_contents_for_appending_const(void* object_pointer)
 {
     const PoDoFo::PdfContents* self = static_cast<PoDoFo::PdfContents*>(object_pointer);
-    return self->GetContentsForAppending();
+    return new PoDoFo::PdfObjectImpl(self->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_contents_copy(void* object_pointer)
@@ -4826,43 +4627,38 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_default(void* pP
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_object(void* pObject, void* pDocument)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfDocument*>(pDocument));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfDocumentImpl*>(pDocument)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_vec_objects(void* pObject, void* pVecObjects)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_page_and_destination(void* pPage, unsigned char eFit)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfDestinationFit>(eFit));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfDestinationFit>(eFit));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_page_and_rect(void* pPage, void* rRect)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_page_and_dist_params(void* pPage, double dLeft, double dTop, double dZoom)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<double>(dLeft), static_cast<double>(dTop), static_cast<double>(dZoom));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<double>(dLeft), static_cast<double>(dTop), static_cast<double>(dZoom));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_page_and_dist_value(void* pPage, unsigned char eFit, double dValue)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfDestinationFit>(eFit), static_cast<double>(dValue));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_from_other(void* rhs)
-{
-    return new PoDoFo::PdfDestination(*static_cast<PoDoFo::PdfDestination*>(rhs));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfDestinationFit>(eFit), static_cast<double>(dValue));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_get_page(void* object_pointer, void* pDoc)
 {
     PoDoFo::PdfDestination* self = static_cast<PoDoFo::PdfDestination*>(object_pointer);
-    return self->GetPage(static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return self->GetPage(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_get_page_1(void* object_pointer, void* pVecObjects)
@@ -4910,7 +4706,7 @@ PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_destination_get_dvalue_cons
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_get_object_const(void* object_pointer)
 {
     const PoDoFo::PdfDestination* self = static_cast<PoDoFo::PdfDestination*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetObject());
+    return new PoDoFo::PdfObjectImpl(self->GetObject());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_get_array_const(void* object_pointer)
@@ -4938,11 +4734,6 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_destination_delete(void* obje
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_difference_default()
 {
     return new PoDoFo::PdfEncodingDifference();
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_difference_from_other(void* rhs)
-{
-    return new PoDoFo::PdfEncodingDifference(*static_cast<PoDoFo::PdfEncodingDifference*>(rhs));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_difference_add_difference(void* object_pointer, int32_t nCode, uint16_t unicodeValue)
@@ -4987,7 +4778,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_difference_delete(vo
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_document(void* rDifference, void* pParent, uint8_t bAutoDelete)
 {
-    return new PoDoFo::PdfDifferenceEncoding(*static_cast<PoDoFo::PdfEncodingDifference*>(rDifference), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bAutoDelete));
+    return new PoDoFo::PdfDifferenceEncoding(*static_cast<PoDoFo::PdfEncodingDifference*>(rDifference), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bAutoDelete));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_vec_objects(void* rDifference, void* pParent, uint8_t bAutoDelete)
@@ -4997,7 +4788,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_vec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_document_encoding(void* rDifference, unsigned char eBaseEncoding, void* pParent, uint8_t bAutoDelete)
 {
-    return new PoDoFo::PdfDifferenceEncoding(*static_cast<PoDoFo::PdfEncodingDifference*>(rDifference), static_cast<PoDoFo::PdfDifferenceEncoding::EBaseEncoding>(eBaseEncoding), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bAutoDelete));
+    return new PoDoFo::PdfDifferenceEncoding(*static_cast<PoDoFo::PdfEncodingDifference*>(rDifference), static_cast<PoDoFo::PdfDifferenceEncoding::EBaseEncoding>(eBaseEncoding), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bAutoDelete));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_vec_objects_encoding(void* rDifference, unsigned char eBaseEncoding, void* pParent, uint8_t bAutoDelete)
@@ -5007,7 +4798,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_vec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_from_object(void* pObject, uint8_t bAutoDelete, uint8_t bExplicitNames)
 {
-    return new PoDoFo::PdfDifferenceEncoding(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<bool>(bAutoDelete), static_cast<bool>(bExplicitNames));
+    return new PoDoFo::PdfDifferenceEncoding(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<bool>(bAutoDelete), static_cast<bool>(bExplicitNames));
 }
 
 PODOFO_API uint16_t PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_name_to_unicode_id(void* object_pointer, void* rName)
@@ -5031,13 +4822,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_add_to_di
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_convert_to_unicode_const(void* object_pointer, void* rEncodedString, void* pFont)
 {
     const PoDoFo::PdfDifferenceEncoding* self = static_cast<PoDoFo::PdfDifferenceEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
     const PoDoFo::PdfDifferenceEncoding* self = static_cast<PoDoFo::PdfDifferenceEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_is_auto_delete_const(void* object_pointer)
@@ -5076,336 +4867,336 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_delete(vo
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_difference_encoding_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfEncoding*>(static_cast<PoDoFo::PdfDifferenceEncoding*>(object_pointer));
+    return new PoDoFo::PdfEncodingImpl(static_cast<PoDoFo::PdfDifferenceEncoding*>(object_pointer));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_info_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetInfo();
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfInfo*>((*self)->GetInfo());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_outlines(void* object_pointer, uint8_t bCreate)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetOutlines(static_cast<bool>(bCreate));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfOutlines*>((*self)->GetOutlines(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_names_tree(void* object_pointer, uint8_t bCreate)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetNamesTree(static_cast<bool>(bCreate));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfNamesTree*>((*self)->GetNamesTree(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_acro_form(void* object_pointer, uint8_t bCreate, unsigned char eDefaultAppearance)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetAcroForm(static_cast<bool>(bCreate), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfAcroForm*>((*self)->GetAcroForm(static_cast<bool>(bCreate), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_pages_tree_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetPagesTree();
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->GetPagesTree();
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_document_get_page_count_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<int32_t>(self->GetPageCount());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetPageCount());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_page_const(void* object_pointer, int32_t nIndex)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetPage(static_cast<int>(nIndex));
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->GetPage(static_cast<int>(nIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_font(void* object_pointer, const char* pszFontName, uint8_t bSymbolCharset, void* pEncoding, unsigned char eFontCreationFlags, uint8_t bEmbedd)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_font_1(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, void* pEncoding, unsigned char eFontCreationFlags, uint8_t bEmbedd, const char* pszFileName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd), static_cast<const char*>(pszFileName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_font_2(void* object_pointer, void* face, uint8_t bSymbolCharset, void* pEncoding, uint8_t bEmbedd)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<bool>(bEmbedd));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<bool>(bEmbedd)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_duplicate_font_type1(void* object_pointer, void* pFont, const char* pszSuffix)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateDuplicateFontType1(static_cast<PoDoFo::PdfFont*>(pFont), static_cast<const char*>(pszSuffix));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateDuplicateFontType1(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get(), static_cast<const char*>(pszSuffix)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_font_subset(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, void* pEncoding, const char* pszFileName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<const char*>(pszFileName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_font_library_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<void*>(self->GetFontLibrary());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<void*>((*self)->GetFontLibrary());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_embed_subset_fonts(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->EmbedSubsetFonts();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->EmbedSubsetFonts();
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_create_page(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_create_pages(void* object_pointer, void* vecSizes)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_insert_page(void* object_pointer, void* rSize, int32_t atIndex)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_append(void* object_pointer, void* rDoc, uint8_t bAppendAll)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfDocument*>(&self->Append(*static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<bool>(bAppendAll)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfDocumentImpl(&(*self)->Append(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<bool>(bAppendAll)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_insert_existing_page_at(void* object_pointer, void* rDoc, int32_t nPageIndex, int32_t nAtIndex)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfDocument*>(&self->InsertExistingPageAt(*static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(nPageIndex), static_cast<int>(nAtIndex)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfDocumentImpl(&(*self)->InsertExistingPageAt(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<int>(nPageIndex), static_cast<int>(nAtIndex)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_fill_xobject_from_document_page(void* object_pointer, void* pXObj, void* rDoc, int32_t nPage, uint8_t bUseTrimBox)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromDocumentPage(static_cast<PoDoFo::PdfXObject*>(pXObj), *static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromDocumentPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_fill_xobject_from_existing_page(void* object_pointer, void* pXObj, int32_t nPage, uint8_t bUseTrimBox)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromExistingPage(static_cast<PoDoFo::PdfXObject*>(pXObj), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromExistingPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_fill_xobject_from_page(void* object_pointer, void* pXObj, void* pPage, uint8_t bUseTrimBox, uint32_t difference)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromPage(static_cast<PoDoFo::PdfXObject*>(pXObj), static_cast<PoDoFo::PdfPage*>(pPage), static_cast<bool>(bUseTrimBox), static_cast<unsigned>(difference)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<bool>(bUseTrimBox), static_cast<unsigned>(difference)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_attach_file(void* object_pointer, void* rFileSpec)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->AttachFile(*static_cast<PoDoFo::PdfFileSpec*>(rFileSpec));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->AttachFile(*static_cast<PoDoFo::PdfFileSpec*>(rFileSpec));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_attachment(void* object_pointer, void* rName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetAttachment(*static_cast<PoDoFo::PdfString*>(rName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfFileSpec*>((*self)->GetAttachment(*static_cast<PoDoFo::PdfString*>(rName)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_add_named_destination(void* object_pointer, void* rDest, void* rsName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->AddNamedDestination(*static_cast<PoDoFo::PdfDestination*>(rDest), *static_cast<PoDoFo::PdfString*>(rsName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->AddNamedDestination(*static_cast<PoDoFo::PdfDestination*>(rDest), *static_cast<PoDoFo::PdfString*>(rsName));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_use_full_screen(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetUseFullScreen();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetUseFullScreen();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_hide_toolbar(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideToolbar();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideToolbar();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_hide_menubar(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideMenubar();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideMenubar();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_hide_window_ui(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideWindowUI();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideWindowUI();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_fit_window(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetFitWindow();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetFitWindow();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_center_window(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetCenterWindow();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetCenterWindow();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_display_doc_title(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetDisplayDocTitle();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetDisplayDocTitle();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_print_scaling(void* object_pointer, void* inScalingType)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetPrintScaling(*static_cast<PoDoFo::PdfName*>(inScalingType));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetPrintScaling(*static_cast<PoDoFo::PdfName*>(inScalingType));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_base_uri(void* object_pointer, const char* inBaseURI)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetBaseURI(static_cast<const char*>(inBaseURI));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetBaseURI(static_cast<const char*>(inBaseURI));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_language(void* object_pointer, const char* inLanguage)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetLanguage(static_cast<const char*>(inLanguage));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetLanguage(static_cast<const char*>(inLanguage));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_binding_direction(void* object_pointer, void* inDirection)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetBindingDirection(*static_cast<PoDoFo::PdfName*>(inDirection));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetBindingDirection(*static_cast<PoDoFo::PdfName*>(inDirection));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_objects(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetObjects();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfVecObjects*>(self->GetObjects());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_font_config_wrapper(void* object_pointer, void* rFontConfig)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetFontConfigWrapper(*static_cast<PoDoFo::PdfFontConfigWrapper*>(rFontConfig));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetFontConfigWrapper(*static_cast<PoDoFo::PdfFontConfigWrapper*>(rFontConfig));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_get_page_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPageMode());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPageMode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_set_page_mode(void* object_pointer, unsigned char page_mode)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetPageMode(static_cast<PoDoFo::EPdfPageMode>(page_mode));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetPageMode(static_cast<PoDoFo::EPdfPageMode>(page_mode));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDocument*>(object_pointer);
+    delete static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_get_object_const(void* object_pointer)
 {
     const PoDoFo::PdfElement* self = static_cast<PoDoFo::PdfElement*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetObject());
+    return new PoDoFo::PdfObjectImpl(self->GetObject());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_get_object(void* object_pointer)
 {
     PoDoFo::PdfElement* self = static_cast<PoDoFo::PdfElement*>(object_pointer);
-    return self->GetObject();
+    return new PoDoFo::PdfObjectImpl(self->GetObject());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_copy(void* object_pointer)
@@ -5421,7 +5212,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_element_delete(void* object_p
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_object_factory_create_encoding(void* object_pointer, void* pObject, void* pToUnicode, uint8_t bExplicitNames)
 {
     PoDoFo::PdfEncodingObjectFactory* self = static_cast<PoDoFo::PdfEncodingObjectFactory*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->CreateEncoding(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfObject*>(pToUnicode), static_cast<bool>(bExplicitNames)));
+    return new PoDoFo::PdfEncodingImpl(self->CreateEncoding(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pToUnicode)->get(), static_cast<bool>(bExplicitNames)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_object_factory_copy(void* object_pointer)
@@ -5441,7 +5232,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_from_vec_objects(
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_from_document(void* pParent)
 {
-    return new PoDoFo::PdfExtGState(static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfExtGState(static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_get_identifier_const(void* object_pointer)
@@ -5527,12 +5318,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_cast_to_base(void
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_from_object(void* pObject, void* pWidget)
 {
-    return new PoDoFo::PdfField(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfAnnotation*>(pWidget));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_from_other(void* rhs)
-{
-    return new PoDoFo::PdfField(*static_cast<PoDoFo::PdfField*>(rhs));
+    return new PoDoFo::PdfField(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfAnnotation*>(pWidget));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_get_page_const(void* object_pointer)
@@ -5634,73 +5420,73 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_field_is_export_const(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_mouse_enter_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetMouseEnterAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetMouseEnterAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_mouse_leave_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetMouseLeaveAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetMouseLeaveAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_mouse_down_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetMouseDownAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetMouseDownAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_mouse_up_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetMouseUpAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetMouseUpAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_focus_enter_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetFocusEnterAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetFocusEnterAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_focus_leave_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetFocusLeaveAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetFocusLeaveAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_page_open_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetPageOpenAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetPageOpenAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_page_close_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetPageCloseAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetPageCloseAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_page_visible_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetPageVisibleAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetPageVisibleAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_page_invisible_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetPageInvisibleAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetPageInvisibleAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_keystroke_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetKeystrokeAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetKeystrokeAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_set_validate_action(void* object_pointer, void* rAction)
 {
     PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    self->SetValidateAction(*static_cast<PoDoFo::PdfAction*>(rAction));
+    self->SetValidateAction(*static_cast<PoDoFo::PdfActionImpl*>(rAction)->get());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_field_get_type_const(void* object_pointer)
@@ -5712,13 +5498,13 @@ PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_field_get_type_const
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_get_widget_annotation_const(void* object_pointer)
 {
     const PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    return self->GetWidgetAnnotation();
+    return const_cast<PoDoFo::PdfAnnotation*>(self->GetWidgetAnnotation());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_get_widget_annotation_const_1(void* object_pointer)
 {
     const PoDoFo::PdfField* self = static_cast<PoDoFo::PdfField*>(object_pointer);
-    return self->GetWidgetAnnotation();
+    return new PoDoFo::PdfObjectImpl(self->GetWidgetAnnotation());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_get_field_name_const(void* object_pointer)
@@ -5765,11 +5551,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_field_copy(void* object_poin
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_field_delete(void* object_pointer)
 {
     delete static_cast<PoDoFo::PdfField*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_button_from_field(void* rhs)
-{
-    return new PoDoFo::PdfButton(*static_cast<PoDoFo::PdfField*>(rhs));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_button_is_push_button_const(void* object_pointer)
@@ -5824,17 +5605,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_push_button_from_widget(void
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_push_button_from_form(void* pPage, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
+    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_push_button_from_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_push_button_from_stream_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocument*>(pDoc));
+    return new PoDoFo::PdfPushButton(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_push_button_from_page(void* pPage)
@@ -5888,17 +5669,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_widget(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_form(void* pPage, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
+    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_stream_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocument*>(pDoc));
+    return new PoDoFo::PdfCheckBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_page(void* pPage)
@@ -5909,13 +5690,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_check_box_from_page(void* pP
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_check_box_set_appearance_checked(void* object_pointer, void* rXObject)
 {
     PoDoFo::PdfCheckBox* self = static_cast<PoDoFo::PdfCheckBox*>(object_pointer);
-    self->SetAppearanceChecked(*static_cast<PoDoFo::PdfXObject*>(rXObject));
+    self->SetAppearanceChecked(*static_cast<PoDoFo::PdfXObjectImpl*>(rXObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_check_box_set_appearance_unchecked(void* object_pointer, void* rXObject)
 {
     PoDoFo::PdfCheckBox* self = static_cast<PoDoFo::PdfCheckBox*>(object_pointer);
-    self->SetAppearanceUnchecked(*static_cast<PoDoFo::PdfXObject*>(rXObject));
+    self->SetAppearanceUnchecked(*static_cast<PoDoFo::PdfXObjectImpl*>(rXObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_check_box_set_checked(void* object_pointer, uint8_t bChecked)
@@ -5952,27 +5733,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_widget(void*
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_form(void* pPage, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
+    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_stream_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocument*>(pDoc));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_field(void* rhs)
-{
-    return new PoDoFo::PdfTextField(*static_cast<PoDoFo::PdfField*>(rhs));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_from_other(void* rhs)
-{
-    return new PoDoFo::PdfTextField(*static_cast<PoDoFo::PdfField*>(rhs));
+    return new PoDoFo::PdfTextField(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_text_field_set_multi_line(void* object_pointer, uint8_t bMultiLine)
@@ -6098,11 +5869,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_text_field_cast_to_base(void
     return static_cast<PoDoFo::PdfField*>(static_cast<PoDoFo::PdfTextField*>(object_pointer));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_field_from_field(void* rhs)
-{
-    return new PoDoFo::PdfListField(*static_cast<PoDoFo::PdfField*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_list_field_insert_item(void* object_pointer, void* rsValue, void* rsDisplayName)
 {
     PoDoFo::PdfListField* self = static_cast<PoDoFo::PdfListField*>(object_pointer);
@@ -6221,22 +5987,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_from_widget(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_from_form(void* pPage, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
+    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_from_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_from_stream_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocument*>(pDoc));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_from_field(void* rhs)
-{
-    return new PoDoFo::PdfComboBox(*static_cast<PoDoFo::PdfField*>(rhs));
+    return new PoDoFo::PdfComboBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_combo_box_set_editable(void* object_pointer, uint8_t bEdit)
@@ -6273,22 +6034,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_from_widget(void* p
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_from_form(void* pPage, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
+    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfAcroForm*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_from_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_from_stream_doc(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocument*>(pDoc));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_from_field(void* rhs)
-{
-    return new PoDoFo::PdfListBox(*static_cast<PoDoFo::PdfField*>(rhs));
+    return new PoDoFo::PdfListBox(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfStreamedDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_copy(void* object_pointer)
@@ -6308,7 +6064,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_list_box_cast_to_base(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_document(const char* pszFilename, uint8_t bEmbedd, void* pParent, uint8_t bStripPath)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bStripPath));
+    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bStripPath));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_vec_objects(const char* pszFilename, uint8_t bEmbedd, void* pParent, uint8_t bStripPath)
@@ -6318,7 +6074,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_vec_objects(c
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_buffer_and_document(const char* pszFilename, const unsigned char* data, int size, void* pParent, uint8_t bStripPath)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<const unsigned char*>(data), static_cast<ptrdiff_t>(size), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bStripPath));
+    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<const unsigned char*>(data), static_cast<ptrdiff_t>(size), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bStripPath));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_buffer_and_vec_objects(const char* pszFilename, const unsigned char* data, int size, void* pParent, uint8_t bStripPath)
@@ -6328,7 +6084,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_buffer_and_ve
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_from_object(void* pObject)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFileSpec(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_get_filename_const(void* object_pointer, uint8_t canUnicode)
@@ -6354,156 +6110,151 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_cast_to_base(void*
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_is_bold_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsBold());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsBold());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_is_italic_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsItalic());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsItalic());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_strike_out(void* object_pointer, uint8_t bStrikeOut)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetStrikeOut(static_cast<bool>(bStrikeOut));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetStrikeOut(static_cast<bool>(bStrikeOut));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_is_strike_out_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsStrikeOut());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsStrikeOut());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_get_identifier_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetIdentifier());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetIdentifier());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_get_encoding_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GetEncoding());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfEncodingImpl((*self)->GetEncoding());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_get_font_metrics_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return const_cast<PoDoFo::PdfFontMetrics*>(self->GetFontMetrics());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfFontMetricsImpl((*self)->GetFontMetrics());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_get_font_metrics2(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return self->GetFontMetrics2();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfFontMetricsImpl((*self)->GetFontMetrics2());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_write_string_to_stream(void* object_pointer, void* rsString, void* pStream)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(rsString), static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(rsString), static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_embed_font(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->EmbedFont();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->EmbedFont();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_add_used_subsetting_glyphs(void* object_pointer, void* sText, int64_t lStringLen)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<long>(lStringLen));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<long>(lStringLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_write_string_to_stream_1(void* object_pointer, void* pszGlyphName, void* pStream)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(pszGlyphName), static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(pszGlyphName), static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_embed_subset_font(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->EmbedSubsetFont();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->EmbedSubsetFont();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_is_subsetting_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSubsetting());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSubsetting());
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_get_font_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontSize());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontSize());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_font_size(void* object_pointer, float font_size)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontSize(static_cast<float>(font_size));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontSize(static_cast<float>(font_size));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_get_font_scale_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontScale());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontScale());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_font_scale(void* object_pointer, float font_scale)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontScale(static_cast<float>(font_scale));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontScale(static_cast<float>(font_scale));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_get_font_char_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontCharSpace());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontCharSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_font_char_space(void* object_pointer, float font_char_space)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontCharSpace(static_cast<float>(font_char_space));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontCharSpace(static_cast<float>(font_char_space));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_get_word_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetWordSpace());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetWordSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_word_space(void* object_pointer, float word_space)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetWordSpace(static_cast<float>(word_space));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetWordSpace(static_cast<float>(word_space));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_is_underlined_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsUnderlined());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsUnderlined());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_set_underlined(void* object_pointer, uint8_t underlined)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetUnderlined(static_cast<bool>(underlined));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetUnderlined(static_cast<bool>(underlined));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFont*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfFont*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_default(void* pParent)
@@ -6525,31 +6276,31 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_empty_cache(void* 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_get_font(void* object_pointer, void* pObject)
 {
     PoDoFo::PdfFontCache* self = static_cast<PoDoFo::PdfFontCache*>(object_pointer);
-    return self->GetFont(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFontImpl(self->GetFont(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_get_font_1(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, uint8_t bEmbedd, unsigned char eFontCreationFlags, void* p, const char* pszFileName)
 {
     PoDoFo::PdfFontCache* self = static_cast<PoDoFo::PdfFontCache*>(object_pointer);
-    return self->GetFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<PoDoFo::PdfEncoding*>(p), static_cast<const char*>(pszFileName));
+    return new PoDoFo::PdfFontImpl(self->GetFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<PoDoFo::PdfEncodingImpl*>(p)->get(), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_get_font_2(void* object_pointer, void* face, uint8_t bSymbolCharset, uint8_t bEmbedd, void* p)
 {
     PoDoFo::PdfFontCache* self = static_cast<PoDoFo::PdfFontCache*>(object_pointer);
-    return self->GetFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfEncoding*>(p));
+    return new PoDoFo::PdfFontImpl(self->GetFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfEncodingImpl*>(p)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_get_duplicate_font_type1(void* object_pointer, void* pFont, const char* pszSuffix)
 {
     PoDoFo::PdfFontCache* self = static_cast<PoDoFo::PdfFontCache*>(object_pointer);
-    return self->GetDuplicateFontType1(static_cast<PoDoFo::PdfFont*>(pFont), static_cast<const char*>(pszSuffix));
+    return new PoDoFo::PdfFontImpl(self->GetDuplicateFontType1(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get(), static_cast<const char*>(pszSuffix)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_get_font_subset(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, void* b, const char* pszFileName)
 {
     PoDoFo::PdfFontCache* self = static_cast<PoDoFo::PdfFontCache*>(object_pointer);
-    return self->GetFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(b), static_cast<const char*>(pszFileName));
+    return new PoDoFo::PdfFontImpl(self->GetFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(b)->get(), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_embed_subset_fonts(void* object_pointer)
@@ -6582,40 +6333,30 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cache_delete(void* objec
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cid_embed_font(void* object_pointer)
 {
-    PoDoFo::PdfFontCID* self = static_cast<PoDoFo::PdfFontCID*>(object_pointer);
-    self->EmbedFont();
+    PoDoFo::PdfFontCIDImpl* self = static_cast<PoDoFo::PdfFontCIDImpl*>(object_pointer);
+    (*self)->EmbedFont();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cid_embed_subset_font(void* object_pointer)
 {
-    PoDoFo::PdfFontCID* self = static_cast<PoDoFo::PdfFontCID*>(object_pointer);
-    self->EmbedSubsetFont();
+    PoDoFo::PdfFontCIDImpl* self = static_cast<PoDoFo::PdfFontCIDImpl*>(object_pointer);
+    (*self)->EmbedSubsetFont();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cid_add_used_subsetting_glyphs(void* object_pointer, void* sText, uint8_t lStringLen)
 {
-    PoDoFo::PdfFontCID* self = static_cast<PoDoFo::PdfFontCID*>(object_pointer);
-    self->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<bool>(lStringLen));
+    PoDoFo::PdfFontCIDImpl* self = static_cast<PoDoFo::PdfFontCIDImpl*>(object_pointer);
+    (*self)->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<bool>(lStringLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_cid_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontCID*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cid_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFont*>(static_cast<PoDoFo::PdfFontCID*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontCIDImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_config_wrapper_default()
 {
     return new PoDoFo::PdfFontConfigWrapper();
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_config_wrapper_from_other(void* rhs)
-{
-    return new PoDoFo::PdfFontConfigWrapper(*static_cast<PoDoFo::PdfFontConfigWrapper*>(rhs));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_config_wrapper_get_font_config(void* object_pointer)
@@ -6637,19 +6378,19 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_config_wrapper_delete(vo
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_factory_create_font_object(void* object_pointer, void* pMetrics, int32_t nFlags, void* pEncoding, void* pParent)
 {
     PoDoFo::PdfFontFactory* self = static_cast<PoDoFo::PdfFontFactory*>(object_pointer);
-    return self->CreateFontObject(static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<int>(nFlags), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    return new PoDoFo::PdfFontImpl(self->CreateFontObject(static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<int>(nFlags), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfVecObjects*>(pParent)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_factory_create_font(void* object_pointer, void* pLibrary, void* pObject)
 {
     PoDoFo::PdfFontFactory* self = static_cast<PoDoFo::PdfFontFactory*>(object_pointer);
-    return self->CreateFont(static_cast<FT_Library*>(pLibrary), static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFontImpl(self->CreateFont(static_cast<FT_Library*>(pLibrary), static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_factory_create_base14_font(void* object_pointer, const char* pszFontName, unsigned char eFlags, void* pEncoding, void* pParent)
 {
     PoDoFo::PdfFontFactory* self = static_cast<PoDoFo::PdfFontFactory*>(object_pointer);
-    self->CreateBase14Font(static_cast<const char*>(pszFontName), static_cast<PoDoFo::EPdfFontFlags>(eFlags), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    self->CreateBase14Font(static_cast<const char*>(pszFontName), static_cast<PoDoFo::EPdfFontFlags>(eFlags), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfVecObjects*>(pParent));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_font_factory_get_font_type(void* object_pointer, const char* pszFilename)
@@ -6670,307 +6411,307 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_factory_delete(void* obj
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<int>(nGlyphId)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<int>(nGlyphId)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_glyph_width_const_1(void* object_pointer, const char* pszGlyphname)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_bounding_box_const(void* object_pointer, void* array)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const(void* object_pointer, void* rsString)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(*static_cast<PoDoFo::PdfString*>(rsString)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(*static_cast<PoDoFo::PdfString*>(rsString)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_1(void* object_pointer, const char* pszText, int64_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const char*>(pszText), static_cast<PoDoFo::pdf_long>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const char*>(pszText), static_cast<PoDoFo::pdf_long>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_2(void* object_pointer, uint16_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_3(void* object_pointer, const wchar_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_4(void* object_pointer, const char* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const char*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const char*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_5(void* object_pointer, uint16_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_string_width_const_6(void* object_pointer, const wchar_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->CharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->CharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_unicode_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->UnicodeCharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->UnicodeCharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_char_width_mm_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->CharWidthMM(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->CharWidthMM(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_line_spacing_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_line_spacing_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetLineSpacingMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetLineSpacingMM());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_underline_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_line_spacing_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_line_spacing_mm_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacingMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacingMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_underline_thickness_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_underline_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetUnderlinePosition());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlinePosition());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_underline_position_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetUnderlinePositionMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetUnderlinePositionMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_strike_out_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetStrikeOutPosition());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeOutPosition());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_strike_out_position_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetStrikeOutPositionMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetStrikeOutPositionMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_strikeout_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetStrikeoutThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeoutThickness());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_strikeout_thickness_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetStrikeoutThicknessMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetStrikeoutThicknessMM());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_filename_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFilename());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFilename());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_data_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFontData());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontData());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_data_len_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetFontDataLen());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFontDataLen());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_fontname_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFontname());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontname());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_subset_fontname_prefix_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetSubsetFontnamePrefix());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetSubsetFontnamePrefix());
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_weight_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint32_t>(self->GetWeight());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetWeight());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetAscent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_pdf_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetPdfAscent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetDescent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetDescent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_pdf_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetPdfDescent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfDescent());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_italic_angle_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int32_t>(self->GetItalicAngle());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetItalicAngle());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_type_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<unsigned char>(self->GetFontType());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetFontType());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_glyph_id_const(void* object_pointer, int64_t lUnicode)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetGlyphId(static_cast<long>(lUnicode)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetGlyphId(static_cast<long>(lUnicode)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_is_symbol_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSymbol());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSymbol());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_font_type_from_filename(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<unsigned char>(self->FontTypeFromFilename(static_cast<const char*>(pszFilename)));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->FontTypeFromFilename(static_cast<const char*>(pszFilename)));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontSize());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontSize());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_set_font_size(void* object_pointer, float font_size)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontSize(static_cast<float>(font_size));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontSize(static_cast<float>(font_size));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_scale_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontScale());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontScale());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_set_font_scale(void* object_pointer, float font_scale)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontScale(static_cast<float>(font_scale));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontScale(static_cast<float>(font_scale));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_font_char_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontCharSpace());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontCharSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_set_font_char_space(void* object_pointer, float font_char_space)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontCharSpace(static_cast<float>(font_char_space));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontCharSpace(static_cast<float>(font_char_space));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_get_word_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetWordSpace());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetWordSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_set_word_space(void* object_pointer, float word_space)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetWordSpace(static_cast<float>(word_space));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetWordSpace(static_cast<float>(word_space));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
+    delete static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_base14_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
     const PoDoFo::PdfFontMetricsBase14* self = static_cast<PoDoFo::PdfFontMetricsBase14*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_base14_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
@@ -7117,341 +6858,326 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_base14_delete(vo
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_base14_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfFontMetrics*>(static_cast<PoDoFo::PdfFontMetricsBase14*>(object_pointer));
+    return new PoDoFo::PdfFontMetricsImpl(static_cast<PoDoFo::PdfFontMetricsBase14*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_create_for_subsetting(void* object_pointer, void* pLibrary, const char* pszFilename, uint8_t pIsSymbol, const char* pszSubsetPrefix)
 {
-    PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return self->CreateForSubsetting(static_cast<FT_Library*>(pLibrary), static_cast<const char*>(pszFilename), static_cast<bool>(pIsSymbol), static_cast<const char*>(pszSubsetPrefix));
+    PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return (*self)->CreateForSubsetting(static_cast<FT_Library*>(pLibrary), static_cast<const char*>(pszFilename), static_cast<bool>(pIsSymbol), static_cast<const char*>(pszSubsetPrefix));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    (*self)->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<int>(nGlyphId)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<int>(nGlyphId)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_glyph_width_const_1(void* object_pointer, const char* pszGlyphname)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_bounding_box_const(void* object_pointer, void* array)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    self->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    (*self)->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->CharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->CharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_unicode_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->UnicodeCharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->UnicodeCharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_line_spacing_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_underline_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_underline_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetUnderlinePosition());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlinePosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_strike_out_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetStrikeOutPosition());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeOutPosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_strikeout_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetStrikeoutThickness());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeoutThickness());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_fontname_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<const char*>(self->GetFontname());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontname());
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_weight_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint32_t>(self->GetWeight());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetWeight());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetAscent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_pdf_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetPdfAscent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetDescent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetDescent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_pdf_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetPdfDescent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfDescent());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_italic_angle_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int32_t>(self->GetItalicAngle());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetItalicAngle());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_glyph_id_const(void* object_pointer, int64_t lUnicode)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int64_t>(self->GetGlyphId(static_cast<long>(lUnicode)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetGlyphId(static_cast<long>(lUnicode)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_is_symbol_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSymbol());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSymbol());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_font_data_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<const char*>(self->GetFontData());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontData());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_font_data_len_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int64_t>(self->GetFontDataLen());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFontDataLen());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_is_bold_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsBold());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsBold());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_is_italic_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsItalic());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsItalic());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_get_face(void* object_pointer)
 {
-    PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<void*>(self->GetFace());
+    PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<void*>((*self)->GetFace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontMetrics*>(static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    (*self)->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<int>(nGlyphId)));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<int>(nGlyphId)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_glyph_width_const_1(void* object_pointer, const char* pszGlyphname)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_bounding_box_const(void* object_pointer, void* array)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    self->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    (*self)->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->CharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->CharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_unicode_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->UnicodeCharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->UnicodeCharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_line_spacing_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_underline_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_underline_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetUnderlinePosition());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlinePosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_strike_out_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetStrikeOutPosition());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeOutPosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_strikeout_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetStrikeoutThickness());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeoutThickness());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_fontname_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<const char*>(self->GetFontname());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontname());
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_weight_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<uint32_t>(self->GetWeight());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetWeight());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetAscent());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_pdf_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetPdfAscent());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetDescent());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetDescent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_pdf_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<double>(self->GetPdfDescent());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfDescent());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_italic_angle_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<int32_t>(self->GetItalicAngle());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetItalicAngle());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_glyph_id_const(void* object_pointer, int64_t lUnicode)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetGlyphId(static_cast<long>(lUnicode)));
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetGlyphId(static_cast<long>(lUnicode)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_is_symbol_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSymbol());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSymbol());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_font_data_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<const char*>(self->GetFontData());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontData());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_get_font_data_len_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsObject* self = static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetFontDataLen());
+    const PoDoFo::PdfFontMetricsObjectImpl* self = static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFontDataLen());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_object_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontMetrics*>(static_cast<PoDoFo::PdfFontMetricsObject*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontMetricsObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_simple_embed_font(void* object_pointer)
 {
-    PoDoFo::PdfFontSimple* self = static_cast<PoDoFo::PdfFontSimple*>(object_pointer);
-    self->EmbedFont();
+    PoDoFo::PdfFontSimpleImpl* self = static_cast<PoDoFo::PdfFontSimpleImpl*>(object_pointer);
+    (*self)->EmbedFont();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_simple_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontSimple*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_simple_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFont*>(static_cast<PoDoFo::PdfFontSimple*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontSimpleImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_true_type_from_vec_objects(void* pMetrics, void* pEncoding, void* pParent, uint8_t bEmbed)
 {
-    return new PoDoFo::PdfFontTrueType(static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfVecObjects*>(pParent), static_cast<bool>(bEmbed));
+    return new PoDoFo::PdfFontTrueType(static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfVecObjects*>(pParent), static_cast<bool>(bEmbed));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_true_type_from_object(void* pMetrics, void* pEncoding, void* pObject)
 {
-    return new PoDoFo::PdfFontTrueType(static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFontTrueType(static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_true_type_delete(void* object_pointer)
@@ -7461,23 +7187,23 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_true_type_delete(void* o
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_true_type_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfFontSimple*>(static_cast<PoDoFo::PdfFontTrueType*>(object_pointer));
+    return new PoDoFo::PdfFontSimpleImpl(static_cast<PoDoFo::PdfFontTrueType*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_from_file(const char* pszFontFileName, void* pMetrics, uint16_t nFaceIndex)
 {
-    return new PoDoFo::PdfFontTTFSubset(static_cast<const char*>(pszFontFileName), static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<unsigned short>(nFaceIndex));
+    return new PoDoFo::PdfFontTTFSubset(static_cast<const char*>(pszFontFileName), static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<unsigned short>(nFaceIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_from_using_device(void* pDevice, void* pMetrics, unsigned char eType, uint16_t nFaceIndex)
 {
-    return new PoDoFo::PdfFontTTFSubset(static_cast<PoDoFo::PdfInputDevice*>(pDevice), static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<PoDoFo::PdfFontTTFSubset::EFontFileType>(eType), static_cast<unsigned short>(nFaceIndex));
+    return new PoDoFo::PdfFontTTFSubset(static_cast<PoDoFo::PdfInputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<PoDoFo::PdfFontTTFSubset::EFontFileType>(eType), static_cast<unsigned short>(nFaceIndex));
 }
 
-PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_build_font(void* object_pointer, void* outputBuffer, const std::set<PoDoFo::pdf_utf16be>& usedChars, void* cidSet)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_build_font(void* object_pointer, void* outputBuffer, void* usedChars, void* cidSet)
 {
     PoDoFo::PdfFontTTFSubset* self = static_cast<PoDoFo::PdfFontTTFSubset*>(object_pointer);
-    self->BuildFont(*static_cast<PoDoFo::PdfRefCountedBuffer*>(outputBuffer), static_cast<const std::set<PoDoFo::pdf_utf16be>&>(usedChars), static_cast<Bcapi::Vector<unsigned char>*>(cidSet)->GetStdVector());
+    self->BuildFont(*static_cast<PoDoFo::PdfRefCountedBuffer*>(outputBuffer), reinterpret_cast<const std::set<PoDoFo::pdf_utf16be>&>(usedChars), static_cast<Bcapi::Vector<unsigned char>*>(cidSet)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_delete(void* object_pointer)
@@ -7487,12 +7213,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_ttfsubset_delete(void* o
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontType1*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontSimple*>(static_cast<PoDoFo::PdfFontType1*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontType1Impl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_type1_encrypt_default()
@@ -7564,22 +7285,17 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_type1_encrypt_charstring_cas
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_base14_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontType1Base14*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_base14_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontSimple*>(static_cast<PoDoFo::PdfFontType1Base14*>(object_pointer));
+    delete static_cast<PoDoFo::PdfFontType1Base14Impl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type3_from_vec_objects(void* pMetrics, void* pEncoding, void* pParent, uint8_t bEmbedd)
 {
-    return new PoDoFo::PdfFontType3(static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfVecObjects*>(pParent), static_cast<bool>(bEmbedd));
+    return new PoDoFo::PdfFontType3(static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfVecObjects*>(pParent), static_cast<bool>(bEmbedd));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type3_from_object(void* pMetrics, void* pEncoding, void* pObject)
 {
-    return new PoDoFo::PdfFontType3(static_cast<PoDoFo::PdfFontMetrics*>(pMetrics), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFontType3(static_cast<PoDoFo::PdfFontMetricsImpl*>(pMetrics)->get(), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_type3_delete(void* object_pointer)
@@ -7589,7 +7305,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_type3_delete(void* objec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type3_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfFontSimple*>(static_cast<PoDoFo::PdfFontType3*>(object_pointer));
+    return new PoDoFo::PdfFontSimpleImpl(static_cast<PoDoFo::PdfFontType3*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_function_copy(void* object_pointer)
@@ -7607,14 +7323,14 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_function_cast_to_base(void* 
     return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfFunction*>(object_pointer));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sampled_function_from_vec_objects(void* rDomain, void* rRange, const std::list<char>& rlstSamples, void* pParent)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sampled_function_from_vec_objects(void* rDomain, void* rRange, void* rlstSamples, void* pParent)
 {
-    return new PoDoFo::PdfSampledFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rRange), static_cast<const std::list<char>&>(rlstSamples), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    return new PoDoFo::PdfSampledFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rRange), reinterpret_cast<const std::list<char>&>(rlstSamples), static_cast<PoDoFo::PdfVecObjects*>(pParent));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sampled_function_from_document(void* rDomain, void* rRange, const std::list<char>& rlstSamples, void* pParent)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sampled_function_from_document(void* rDomain, void* rRange, void* rlstSamples, void* pParent)
 {
-    return new PoDoFo::PdfSampledFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rRange), static_cast<const std::list<char>&>(rlstSamples), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfSampledFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rRange), reinterpret_cast<const std::list<char>&>(rlstSamples), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sampled_function_copy(void* object_pointer)
@@ -7639,7 +7355,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_exponential_function_from_ve
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_exponential_function_from_document(void* rDomain, void* rC0, void* rC1, double dExponent, void* pParent)
 {
-    return new PoDoFo::PdfExponentialFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rC0), *static_cast<PoDoFo::PdfArray*>(rC1), static_cast<double>(dExponent), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfExponentialFunction(*static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rC0), *static_cast<PoDoFo::PdfArray*>(rC1), static_cast<double>(dExponent), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_exponential_function_copy(void* object_pointer)
@@ -7657,14 +7373,14 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_exponential_function_cast_to
     return static_cast<PoDoFo::PdfFunction*>(static_cast<PoDoFo::PdfExponentialFunction*>(object_pointer));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_from_vec_objects(const std::list<PoDoFo::PdfFunction>& rlstFunctions, void* rDomain, void* rBounds, void* rEncode, void* pParent)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_from_vec_objects(void* rlstFunctions, void* rDomain, void* rBounds, void* rEncode, void* pParent)
 {
-    return new PoDoFo::PdfStitchingFunction(static_cast<const std::list<PoDoFo::PdfFunction>&>(rlstFunctions), *static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rBounds), *static_cast<PoDoFo::PdfArray*>(rEncode), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    return new PoDoFo::PdfStitchingFunction(reinterpret_cast<const std::list<PoDoFo::PdfFunction>&>(rlstFunctions), *static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rBounds), *static_cast<PoDoFo::PdfArray*>(rEncode), static_cast<PoDoFo::PdfVecObjects*>(pParent));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_from_document(const std::list<PoDoFo::PdfFunction>& rlstFunctions, void* rDomain, void* rBounds, void* rEncode, void* pParent)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_from_document(void* rlstFunctions, void* rDomain, void* rBounds, void* rEncode, void* pParent)
 {
-    return new PoDoFo::PdfStitchingFunction(static_cast<const std::list<PoDoFo::PdfFunction>&>(rlstFunctions), *static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rBounds), *static_cast<PoDoFo::PdfArray*>(rEncode), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfStitchingFunction(reinterpret_cast<const std::list<PoDoFo::PdfFunction>&>(rlstFunctions), *static_cast<PoDoFo::PdfArray*>(rDomain), *static_cast<PoDoFo::PdfArray*>(rBounds), *static_cast<PoDoFo::PdfArray*>(rEncode), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_copy(void* object_pointer)
@@ -7684,13 +7400,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_stitching_function_cast_to_b
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_default(int32_t nFirstChar, int32_t nLastChar, uint8_t bAutoDelete, void* pToUnicode)
 {
-    return new PoDoFo::PdfIdentityEncoding(static_cast<int>(nFirstChar), static_cast<int>(nLastChar), static_cast<bool>(bAutoDelete), static_cast<PoDoFo::PdfObject*>(pToUnicode));
+    return new PoDoFo::PdfIdentityEncoding(static_cast<int>(nFirstChar), static_cast<int>(nLastChar), static_cast<bool>(bAutoDelete), static_cast<PoDoFo::PdfObjectImpl*>(pToUnicode)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_convert_to_unicode_const(void* object_pointer, void* rEncodedString, void* pFont)
 {
     const PoDoFo::PdfIdentityEncoding* self = static_cast<PoDoFo::PdfIdentityEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_add_to_dictionary_const(void* object_pointer, void* rDictionary)
@@ -7702,7 +7418,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_add_to_dict
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
     const PoDoFo::PdfIdentityEncoding* self = static_cast<PoDoFo::PdfIdentityEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_is_auto_delete_const(void* object_pointer)
@@ -7735,7 +7451,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_delete(void
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_identity_encoding_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfEncoding*>(static_cast<PoDoFo::PdfIdentityEncoding*>(object_pointer));
+    return new PoDoFo::PdfEncodingImpl(static_cast<PoDoFo::PdfIdentityEncoding*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_from_vec_objects(void* pParent, const char* pszPrefix)
@@ -7745,12 +7461,12 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_from_vec_objects(void*
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_from_document(void* pParent, const char* pszPrefix)
 {
-    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<const char*>(pszPrefix));
+    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<const char*>(pszPrefix));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_from_object(void* pObject)
 {
-    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API const char** PODOFO_API_CONVENTION po_do_fo_pdf_image_get_supported_formats(void* object_pointer)
@@ -7768,7 +7484,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_color_space(v
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_iccprofile(void* object_pointer, void* pStream, int64_t lColorComponents, unsigned char eAlternateColorSpace)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageICCProfile(static_cast<PoDoFo::PdfInputStream*>(pStream), static_cast<long>(lColorComponents), static_cast<PoDoFo::EPdfColorSpace>(eAlternateColorSpace));
+    self->SetImageICCProfile(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), static_cast<long>(lColorComponents), static_cast<PoDoFo::EPdfColorSpace>(eAlternateColorSpace));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_softmask(void* object_pointer, void* pSoftmask)
@@ -7792,19 +7508,19 @@ PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_image_get_height_const(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_data(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream));
+    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_data_1(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream, void* vecFilters)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_set_image_data_raw(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageDataRaw(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream));
+    self->SetImageDataRaw(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_load_from_file(void* object_pointer, const char* pszFilename)
@@ -7855,7 +7571,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_delete(void* object_poi
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfXObject*>(static_cast<PoDoFo::PdfImage*>(object_pointer));
+    return new PoDoFo::PdfXObjectImpl(static_cast<PoDoFo::PdfImage*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_from_vec_objects(void* pParent, int32_t eInitial)
@@ -7865,7 +7581,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_from_vec_objects(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_from_object(void* pObject, int32_t eInitial)
 {
-    return new PoDoFo::PdfInfo(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<int>(eInitial));
+    return new PoDoFo::PdfInfo(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<int>(eInitial));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_get_creation_date_const(void* object_pointer)
@@ -7987,276 +7703,270 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_cast_to_base(void* obje
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_load(void* object_pointer, const char* pszFilename, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(static_cast<const char*>(pszFilename), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(static_cast<const char*>(pszFilename), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_load_1(void* object_pointer, const char* pBuffer, int64_t lLen, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(static_cast<const char*>(pBuffer), static_cast<long>(lLen), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(static_cast<const char*>(pBuffer), static_cast<long>(lLen), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_load_2(void* object_pointer, void* rDevice, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_loaded_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLoaded());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLoaded());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_write(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Write(static_cast<const char*>(pszFilename));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Write(static_cast<const char*>(pszFilename));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_write_1(void* object_pointer, void* pDevice)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_write_update(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->WriteUpdate(static_cast<const char*>(pszFilename));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->WriteUpdate(static_cast<const char*>(pszFilename));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_write_update_1(void* object_pointer, void* rDevice, uint8_t bTruncate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDevice*>(rDevice), static_cast<bool>(bTruncate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->WriteUpdate(static_cast<PoDoFo::PdfOutputDeviceImpl*>(rDevice)->get(), static_cast<bool>(bTruncate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_add_pdf_extension(void* object_pointer, const char* ns, int64_t level)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->AddPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->AddPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_has_pdf_extension_const(void* object_pointer, const char* ns, int64_t level)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->HasPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level)));
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_remove_pdf_extension(void* object_pointer, const char* ns, int64_t level)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->RemovePdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->RemovePdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_pdf_extensions_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new Bcapi::Vector<PoDoFo::PdfExtension>(self->GetPdfExtensions());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new Bcapi::Vector<PoDoFo::PdfExtension>((*self)->GetPdfExtensions());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_password(void* object_pointer, const char* sPassword)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetPassword(static_cast<const char*>(sPassword));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetPassword(static_cast<const char*>(sPassword));
 }
 
-PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_encrypted(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, unsigned char eAlgorithm, unsigned char eKeyLength)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_encrypted(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, uint8_t eAlgorithm, unsigned char eKeyLength)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetEncrypted(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncrypt::EPdfKeyLength>(eKeyLength));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetEncrypted(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncryptImpl::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncryptImpl::EPdfKeyLength>(eKeyLength));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_encrypted_1(void* object_pointer, void* eKeyLength)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetEncrypted(*static_cast<PoDoFo::PdfEncrypt*>(eKeyLength));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetEncrypted(*static_cast<PoDoFo::PdfEncryptImpl*>(eKeyLength)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_encrypted_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->GetEncrypted());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetEncrypted());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new PoDoFo::PdfVecObjects(self->GetObjects());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_objects(void* object_pointer)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new PoDoFo::PdfVecObjects(self->GetObjects());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfVecObjects((*self)->GetObjects());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_catalog(void* object_pointer)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<PoDoFo::PdfObject*>(self->GetCatalog());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetCatalog());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_catalog_const(void* object_pointer)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_catalog_1(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetCatalog());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetCatalog());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_trailer_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetTrailer());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetTrailer());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_struct_tree_root_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetStructTreeRoot();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetStructTreeRoot());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_metadata_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetMetadata();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetMetadata());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_mark_info_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetMarkInfo();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetMarkInfo());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_language_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetLanguage();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetLanguage());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_font(void* object_pointer, void* pObject)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetFont(static_cast<PoDoFo::PdfObject*>(pObject));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetFont(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_insert_pages(void* object_pointer, void* rDoc, int32_t inFirstPage, int32_t inNumPages)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfMemDocument*>(&self->InsertPages(static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(inFirstPage), static_cast<int>(inNumPages)));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfMemDocumentImpl(&(*self)->InsertPages(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc), static_cast<int>(inFirstPage), static_cast<int>(inNumPages)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_delete_pages(void* object_pointer, int32_t inFirstPage, int32_t inNumPages)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->DeletePages(static_cast<int>(inFirstPage), static_cast<int>(inNumPages));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->DeletePages(static_cast<int>(inFirstPage), static_cast<int>(inNumPages));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_free_object_memory(void* object_pointer, void* rRef, uint8_t bForce)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->FreeObjectMemory(*static_cast<PoDoFo::PdfReference*>(rRef), static_cast<bool>(bForce));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(*static_cast<PoDoFo::PdfReference*>(rRef), static_cast<bool>(bForce));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_free_object_memory_1(void* object_pointer, void* pObj, uint8_t bForce)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->FreeObjectMemory(static_cast<PoDoFo::PdfObject*>(pObj), static_cast<bool>(bForce));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), static_cast<bool>(bForce));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_encrypt_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncrypt*>(self->GetEncrypt());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->GetEncrypt());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_write_mode(void* object_pointer, unsigned char write_mode)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetWriteMode(static_cast<PoDoFo::EPdfWriteMode>(write_mode));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetWriteMode(static_cast<PoDoFo::EPdfWriteMode>(write_mode));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_set_pdf_version(void* object_pointer, unsigned char pdf_version)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetPdfVersion(static_cast<PoDoFo::EPdfVersion>(pdf_version));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetPdfVersion(static_cast<PoDoFo::EPdfVersion>(pdf_version));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfDocument*>(static_cast<PoDoFo::PdfMemDocument*>(object_pointer));
+    delete static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_from_vec_objects(void* pParent)
@@ -8266,19 +7976,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_from_vec_objects(
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_from_object(void* pObject, void* pCatalog)
 {
-    return new PoDoFo::PdfNamesTree(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfObject*>(pCatalog));
+    return new PoDoFo::PdfNamesTree(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pCatalog)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_add_value(void* object_pointer, void* tree, void* key, void* rValue)
 {
     PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    self->AddValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key), *static_cast<PoDoFo::PdfObject*>(rValue));
+    self->AddValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key), *static_cast<PoDoFo::PdfObjectImpl*>(rValue)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_get_value_const(void* object_pointer, void* tree, void* key)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key));
+    return new PoDoFo::PdfObjectImpl(self->GetValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_has_value_const(void* object_pointer, void* tree, void* key)
@@ -8290,7 +8000,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_has_value_const
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_check_limits(void* object_pointer, void* pObj, void* key)
 {
     PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return static_cast<unsigned char>(self->CheckLimits(static_cast<PoDoFo::PdfObject*>(pObj), *static_cast<PoDoFo::PdfString*>(key)));
+    return static_cast<unsigned char>(self->CheckLimits(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), *static_cast<PoDoFo::PdfString*>(key)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_to_dictionary(void* object_pointer, void* dictionary, void* rDict)
@@ -8302,13 +8012,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_to_dictionary(void
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_get_java_script_node_const(void* object_pointer, uint8_t bCreate)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetJavaScriptNode(static_cast<bool>(bCreate));
+    return new PoDoFo::PdfObjectImpl(self->GetJavaScriptNode(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_get_dests_node_const(void* object_pointer, uint8_t bCreate)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetDestsNode(static_cast<bool>(bCreate));
+    return new PoDoFo::PdfObjectImpl(self->GetDestsNode(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_copy(void* object_pointer)
@@ -8329,19 +8039,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_cast_to_base(void
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_create_child(void* object_pointer, void* sTitle, void* rDest)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateChild(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateChild(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_create_next(void* object_pointer, void* sTitle, void* rDest)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_create_next_1(void* object_pointer, void* sTitle, void* rAction)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfAction*>(rAction));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfActionImpl*>(rAction)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_insert_child(void* object_pointer, void* pItem)
@@ -8353,31 +8063,31 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_insert_child(voi
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_prev_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Prev();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Prev());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_next_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Next();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Next());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_first_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->First();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->First());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_last_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Last();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Last());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_get_parent_outline_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->GetParentOutline();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->GetParentOutline());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_erase(void* object_pointer)
@@ -8395,7 +8105,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_set_destination(
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_get_destination(void* object_pointer, void* pDoc)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->GetDestination(static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return self->GetDestination(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_set_text_color(void* object_pointer, double r, double g, double b)
@@ -8431,7 +8141,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_get_action(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_set_action(void* object_pointer, void* action)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    self->SetAction(*static_cast<PoDoFo::PdfAction*>(action));
+    self->SetAction(*static_cast<PoDoFo::PdfActionImpl*>(action)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_get_title_const(void* object_pointer)
@@ -8480,13 +8190,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_from_parent(void* p
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_from_object(void* pObject)
 {
-    return new PoDoFo::PdfOutlines(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfOutlines(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_create_root(void* object_pointer, void* sTitle)
 {
     PoDoFo::PdfOutlines* self = static_cast<PoDoFo::PdfOutlines*>(object_pointer);
-    return self->CreateRoot(*static_cast<PoDoFo::PdfString*>(sTitle));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateRoot(*static_cast<PoDoFo::PdfString*>(sTitle)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_copy(void* object_pointer)
@@ -8506,285 +8216,275 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_cast_to_base(void* 
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_page_set_page_width(void* object_pointer, int32_t newWidth)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint8_t>(self->SetPageWidth(static_cast<int>(newWidth)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->SetPageWidth(static_cast<int>(newWidth)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_page_set_page_height(void* object_pointer, int32_t newHeight)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint8_t>(self->SetPageHeight(static_cast<int>(newHeight)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->SetPageHeight(static_cast<int>(newHeight)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_set_trim_box(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->SetTrimBox(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->SetTrimBox(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_get_page_number_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint32_t>(self->GetPageNumber());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetPageNumber());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_create_standard_page_size(void* object_pointer, unsigned char ePageSize, uint8_t bLandscape)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->CreateStandardPageSize(static_cast<PoDoFo::EPdfPageSize>(ePageSize), static_cast<bool>(bLandscape)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->CreateStandardPageSize(static_cast<PoDoFo::EPdfPageSize>(ePageSize), static_cast<bool>(bLandscape)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_media_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetMediaBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetMediaBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_crop_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetCropBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetCropBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_trim_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetTrimBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetTrimBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_bleed_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetBleedBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetBleedBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_art_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetArtBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetArtBox());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_get_num_annots_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumAnnots());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumAnnots());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_create_annotation(void* object_pointer, unsigned char eType, void* rRect)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->CreateAnnotation(static_cast<PoDoFo::EPdfAnnotation>(eType), *static_cast<PoDoFo::PdfRect*>(rRect));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return (*self)->CreateAnnotation(static_cast<PoDoFo::EPdfAnnotation>(eType), *static_cast<PoDoFo::PdfRect*>(rRect));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_annotation(void* object_pointer, int32_t index)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetAnnotation(static_cast<int>(index));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return (*self)->GetAnnotation(static_cast<int>(index));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_delete_annotation(void* object_pointer, int32_t index)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->DeleteAnnotation(static_cast<int>(index));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->DeleteAnnotation(static_cast<int>(index));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_delete_annotation_1(void* object_pointer, void* ref)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->DeleteAnnotation(*static_cast<PoDoFo::PdfReference*>(ref));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->DeleteAnnotation(*static_cast<PoDoFo::PdfReference*>(ref));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_get_num_fields_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumFields());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumFields());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_field_const(void* object_pointer, int32_t index)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfField(self->GetField(static_cast<int>(index)));
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfField((*self)->GetField(static_cast<int>(index)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_from_resources(void* object_pointer, void* rType, void* rKey)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetFromResources(*static_cast<PoDoFo::PdfName*>(rType), *static_cast<PoDoFo::PdfName*>(rKey));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetFromResources(*static_cast<PoDoFo::PdfName*>(rType), *static_cast<PoDoFo::PdfName*>(rKey)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_inherited_key_const(void* object_pointer, void* rName)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetInheritedKey(*static_cast<PoDoFo::PdfName*>(rName)));
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetInheritedKey(*static_cast<PoDoFo::PdfName*>(rName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_get_own_annotations_array(void* object_pointer, uint8_t bCreate, void* pDocument)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetOwnAnnotationsArray(static_cast<bool>(bCreate), static_cast<PoDoFo::PdfDocument*>(pDocument));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetOwnAnnotationsArray(static_cast<bool>(bCreate), static_cast<PoDoFo::PdfDocumentImpl*>(pDocument)->get()));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_get_rotation_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetRotation());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetRotation());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_set_rotation(void* object_pointer, int32_t rotation)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->SetRotation(static_cast<int>(rotation));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->SetRotation(static_cast<int>(rotation));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfPage*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfPage*>(object_pointer));
+    delete static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_get_total_number_of_pages_const(void* object_pointer)
 {
-    const PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return static_cast<int32_t>(self->GetTotalNumberOfPages());
+    const PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetTotalNumberOfPages());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_get_page(void* object_pointer, int32_t nIndex)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->GetPage(static_cast<int>(nIndex));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->GetPage(static_cast<int>(nIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_get_page_1(void* object_pointer, void* ref)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->GetPage(*static_cast<PoDoFo::PdfReference*>(ref));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->GetPage(*static_cast<PoDoFo::PdfReference*>(ref));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_insert_page(void* object_pointer, int32_t nAfterPageIndex, void* pPage)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfPage*>(pPage));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_insert_page_1(void* object_pointer, int32_t nAfterPageIndex, void* pPage)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfObject*>(pPage));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfObjectImpl*>(pPage)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_insert_page_2(void* object_pointer, void* rSize, int32_t atIndex)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_create_page(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_create_pages(void* object_pointer, void* vecSizes)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_delete_page(void* object_pointer, int32_t inPageNumber)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->DeletePage(static_cast<int>(inPageNumber));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->DeletePage(static_cast<int>(inPageNumber));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_clear_cache(void* object_pointer)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->ClearCache();
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->ClearCache();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfPagesTree*>(object_pointer));
+    delete static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_get_page(void* object_pointer, int32_t nIndex)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    return self->GetPage(static_cast<int>(nIndex));
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    return (*self)->GetPage(static_cast<int>(nIndex));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_add_page_object(void* object_pointer, int32_t nIndex, void* pPage)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->AddPageObject(static_cast<int>(nIndex), static_cast<PoDoFo::PdfPage*>(pPage));
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->AddPageObject(static_cast<int>(nIndex), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_add_page_objects(void* object_pointer, int32_t nIndex, void* vecPages)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->AddPageObjects(static_cast<int>(nIndex), (static_cast<Bcapi::Vector<PoDoFo::PdfPage*>* >(vecPages))->GetStdVector());
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->AddPageObjects(static_cast<int>(nIndex), static_cast<Bcapi::Vector<PoDoFo::PdfPageImpl*>*>(vecPages)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_insert_page(void* object_pointer, int32_t nAfterPageIndex)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->InsertPage(static_cast<int>(nAfterPageIndex));
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->InsertPage(static_cast<int>(nAfterPageIndex));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_insert_pages(void* object_pointer, int32_t nAfterPageIndex, int32_t nCount)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->InsertPages(static_cast<int>(nAfterPageIndex), static_cast<int>(nCount));
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->InsertPages(static_cast<int>(nAfterPageIndex), static_cast<int>(nCount));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_delete_page(void* object_pointer, int32_t inPageNumber)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->DeletePage(static_cast<int>(inPageNumber));
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->DeletePage(static_cast<int>(inPageNumber));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_clear_cache(void* object_pointer)
 {
-    PoDoFo::PdfPagesTreeCache* self = static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
-    self->ClearCache();
+    PoDoFo::PdfPagesTreeCacheImpl* self = static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
+    (*self)->ClearCache();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_cache_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfPagesTreeCache*>(object_pointer);
+    delete static_cast<PoDoFo::PdfPagesTreeCacheImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_default()
@@ -8897,7 +8597,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_line_join_style(v
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_font(void* object_pointer, void* pFont)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->SetFont(static_cast<PoDoFo::PdfFont*>(pFont));
+    self->SetFont(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_text_rendering_mode(void* object_pointer, unsigned char mode)
@@ -8915,7 +8615,7 @@ PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_painter_get_text_ren
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_get_font_const(void* object_pointer)
 {
     const PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    return self->GetFont();
+    return new PoDoFo::PdfFontImpl(self->GetFont());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_clip_rect(void* object_pointer, double dX, double dY, double dWidth, double dHeight)
@@ -9005,7 +8705,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_end_text(void* object
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_draw_glyph(void* object_pointer, void* pDocument, double dX, double dY, const char* pszGlyphname)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->DrawGlyph(static_cast<PoDoFo::PdfMemDocument*>(pDocument), static_cast<double>(dX), static_cast<double>(dY), static_cast<const char*>(pszGlyphname));
+    self->DrawGlyph(static_cast<PoDoFo::PdfMemDocumentImpl*>(pDocument)->get(), static_cast<double>(dX), static_cast<double>(dY), static_cast<const char*>(pszGlyphname));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_draw_image(void* object_pointer, double dX, double dY, void* pObject, double dScaleX, double dScaleY)
@@ -9017,7 +8717,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_draw_image(void* obje
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_draw_xobject(void* object_pointer, double dX, double dY, void* pObject, double dScaleX, double dScaleY)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->DrawXObject(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
+    self->DrawXObject(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_close_path(void* object_pointer)
@@ -9155,13 +8855,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_rendering_intent(
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_get_page_const(void* object_pointer)
 {
     const PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    return self->GetPage();
+    return new PoDoFo::PdfCanvasImpl(self->GetPage());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_set_page(void* object_pointer, void* page)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->SetPage(static_cast<PoDoFo::PdfCanvas*>(page));
+    self->SetPage(static_cast<PoDoFo::PdfCanvasImpl*>(page)->get());
 }
 
 PODOFO_API uint16_t PODOFO_API_CONVENTION po_do_fo_pdf_painter_get_tab_width_const(void* object_pointer)
@@ -9243,7 +8943,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_mm_draw_image_mm(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_mm_draw_xobject_mm(void* object_pointer, int64_t lX, int64_t lY, void* pObject, double dScaleX, double dScaleY)
 {
     PoDoFo::PdfPainterMM* self = static_cast<PoDoFo::PdfPainterMM*>(object_pointer);
-    self->DrawXObjectMM(static_cast<long>(lX), static_cast<long>(lY), static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
+    self->DrawXObjectMM(static_cast<long>(lX), static_cast<long>(lY), static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_mm_line_to_mm(void* object_pointer, int64_t lX, int64_t lY)
@@ -9296,7 +8996,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_axial_shading_pattern_from_v
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_axial_shading_pattern_from_document(double dX0, double dY0, double dX1, double dY1, void* rStart, void* rEnd, void* pParent)
 {
-    return new PoDoFo::PdfAxialShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), static_cast<double>(dX1), static_cast<double>(dY1), *static_cast<PoDoFo::PdfColor*>(rStart), *static_cast<PoDoFo::PdfColor*>(rEnd), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfAxialShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), static_cast<double>(dX1), static_cast<double>(dY1), *static_cast<PoDoFo::PdfColor*>(rStart), *static_cast<PoDoFo::PdfColor*>(rEnd), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_axial_shading_pattern_copy(void* object_pointer)
@@ -9321,7 +9021,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_function_base_shading_patter
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_function_base_shading_pattern_from_document(void* rLL, void* rUL, void* rLR, void* rUR, void* rMatrix, void* pParent)
 {
-    return new PoDoFo::PdfFunctionBaseShadingPattern(*static_cast<PoDoFo::PdfColor*>(rLL), *static_cast<PoDoFo::PdfColor*>(rUL), *static_cast<PoDoFo::PdfColor*>(rLR), *static_cast<PoDoFo::PdfColor*>(rUR), *static_cast<PoDoFo::PdfArray*>(rMatrix), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfFunctionBaseShadingPattern(*static_cast<PoDoFo::PdfColor*>(rLL), *static_cast<PoDoFo::PdfColor*>(rUL), *static_cast<PoDoFo::PdfColor*>(rLR), *static_cast<PoDoFo::PdfColor*>(rUR), *static_cast<PoDoFo::PdfArray*>(rMatrix), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_function_base_shading_pattern_copy(void* object_pointer)
@@ -9346,7 +9046,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_radial_shading_pattern_from_
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_radial_shading_pattern_from_document(double dX0, double dY0, double dR0, double dX1, double dY1, double dR1, void* rStart, void* rEnd, void* pParent)
 {
-    return new PoDoFo::PdfRadialShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), static_cast<double>(dR0), static_cast<double>(dX1), static_cast<double>(dY1), static_cast<double>(dR1), *static_cast<PoDoFo::PdfColor*>(rStart), *static_cast<PoDoFo::PdfColor*>(rEnd), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfRadialShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), static_cast<double>(dR0), static_cast<double>(dX1), static_cast<double>(dY1), static_cast<double>(dR1), *static_cast<PoDoFo::PdfColor*>(rStart), *static_cast<PoDoFo::PdfColor*>(rEnd), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_radial_shading_pattern_copy(void* object_pointer)
@@ -9366,12 +9066,12 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_radial_shading_pattern_cast_
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_from_page(void* pPage, void* rRect, void* pDoc)
 {
-    return new PoDoFo::PdfSignatureField(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return new PoDoFo::PdfSignatureField(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_from_widget(void* pWidget, void* rRect, void* pDoc, uint8_t bInit)
 {
-    return new PoDoFo::PdfSignatureField(static_cast<PoDoFo::PdfAnnotation*>(pWidget), static_cast<PoDoFo::PdfAcroForm*>(rRect), static_cast<PoDoFo::PdfDocument*>(pDoc), static_cast<bool>(bInit));
+    return new PoDoFo::PdfSignatureField(static_cast<PoDoFo::PdfAnnotation*>(pWidget), static_cast<PoDoFo::PdfAcroForm*>(rRect), static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get(), static_cast<bool>(bInit));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_from_widget1(void* pWidget)
@@ -9382,7 +9082,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_from_widget1
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_set_appearance_stream(void* object_pointer, void* pObject, unsigned char eAppearance, void* state)
 {
     PoDoFo::PdfSignatureField* self = static_cast<PoDoFo::PdfSignatureField*>(object_pointer);
-    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
+    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_set_signature(void* object_pointer, void* signatureData)
@@ -9418,13 +9118,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_set_signature
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_add_certification_reference(void* object_pointer, void* pDocumentCatalog, unsigned char perm)
 {
     PoDoFo::PdfSignatureField* self = static_cast<PoDoFo::PdfSignatureField*>(object_pointer);
-    self->AddCertificationReference(static_cast<PoDoFo::PdfObject*>(pDocumentCatalog), static_cast<PoDoFo::PdfSignatureField::EPdfCertPermission>(perm));
+    self->AddCertificationReference(static_cast<PoDoFo::PdfObjectImpl*>(pDocumentCatalog)->get(), static_cast<PoDoFo::PdfSignatureField::EPdfCertPermission>(perm));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_get_signature_object_const(void* object_pointer)
 {
     const PoDoFo::PdfSignatureField* self = static_cast<PoDoFo::PdfSignatureField*>(object_pointer);
-    return self->GetSignatureObject();
+    return new PoDoFo::PdfObjectImpl(self->GetSignatureObject());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_signature_field_ensure_signature_object(void* object_pointer)
@@ -9455,7 +9155,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_triangle_shading_pattern_fro
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_triangle_shading_pattern_from_document(double dX0, double dY0, void* color0, double dX1, double dY1, void* color1, double dX2, double dY2, void* color2, void* pParent)
 {
-    return new PoDoFo::PdfTriangleShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), *static_cast<PoDoFo::PdfColor*>(color0), static_cast<double>(dX1), static_cast<double>(dY1), *static_cast<PoDoFo::PdfColor*>(color1), static_cast<double>(dX2), static_cast<double>(dY2), *static_cast<PoDoFo::PdfColor*>(color2), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfTriangleShadingPattern(static_cast<double>(dX0), static_cast<double>(dY0), *static_cast<PoDoFo::PdfColor*>(color0), static_cast<double>(dX1), static_cast<double>(dY1), *static_cast<PoDoFo::PdfColor*>(color1), static_cast<double>(dX2), static_cast<double>(dY2), *static_cast<PoDoFo::PdfColor*>(color2), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_triangle_shading_pattern_copy(void* object_pointer)
@@ -9475,7 +9175,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_triangle_shading_pattern_cas
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sign_output_device_from_device(void* pRealDevice)
 {
-    return new PoDoFo::PdfSignOutputDevice(static_cast<PoDoFo::PdfOutputDevice*>(pRealDevice));
+    return new PoDoFo::PdfSignOutputDevice(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pRealDevice)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sign_output_device_from_file(const char* pszFilename)
@@ -9579,182 +9279,167 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_sign_output_device_delete(voi
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_sign_output_device_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfOutputDevice*>(static_cast<PoDoFo::PdfSignOutputDevice*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_from_device(void* pDevice, unsigned char eVersion, void* pEncrypt, unsigned char eWriteMode)
-{
-    return new PoDoFo::PdfStreamedDocument(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_from_file(const char* pszFilename, unsigned char eVersion, void* pEncrypt, unsigned char eWriteMode)
-{
-    return new PoDoFo::PdfStreamedDocument(static_cast<const char*>(pszFilename), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
+    return new PoDoFo::PdfOutputDeviceImpl(static_cast<PoDoFo::PdfSignOutputDevice*>(object_pointer));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_close(void* object_pointer)
 {
-    PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfDocument*>(static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer));
+    delete static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_text_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetText(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetText(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_alignment_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<unsigned char>(self->GetAlignment(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetAlignment(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_vertical_alignment_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<unsigned char>(self->GetVerticalAlignment(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetVerticalAlignment(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_font_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return self->GetFont(static_cast<int>(col), static_cast<int>(row));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->GetFont(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_has_background_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_background_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_foreground_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetForegroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetForegroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_has_word_wrap_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasWordWrap(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasWordWrap(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_has_borders_const(void* object_pointer)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasBorders());
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasBorders());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_border_width_const(void* object_pointer)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<double>(self->GetBorderWidth());
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetBorderWidth());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_border_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetBorderColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetBorderColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_has_image_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasImage(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasImage(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_get_image_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return self->GetImage(static_cast<int>(col), static_cast<int>(row));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return (*self)->GetImage(static_cast<int>(col), static_cast<int>(row));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_model_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfTableModel*>(object_pointer);
+    delete static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_default()
@@ -9770,7 +9455,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_from_size
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_set_font(void* object_pointer, void* pFont)
 {
     PoDoFo::PdfSimpleTableModel* self = static_cast<PoDoFo::PdfSimpleTableModel*>(object_pointer);
-    self->SetFont(static_cast<PoDoFo::PdfFont*>(pFont));
+    self->SetFont(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_set_alignment(void* object_pointer, unsigned char eAlignment)
@@ -9848,7 +9533,7 @@ PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_g
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_get_font_const(void* object_pointer, int32_t col, int32_t row)
 {
     const PoDoFo::PdfSimpleTableModel* self = static_cast<PoDoFo::PdfSimpleTableModel*>(object_pointer);
-    return self->GetFont(static_cast<int>(col), static_cast<int>(row));
+    return new PoDoFo::PdfFontImpl(self->GetFont(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_has_background_color_const(void* object_pointer, int32_t col, int32_t row)
@@ -9917,90 +9602,90 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_delete(voi
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_simple_table_model_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfTableModel*>(static_cast<PoDoFo::PdfSimpleTableModel*>(object_pointer));
+    return new PoDoFo::PdfTableModelImpl(static_cast<PoDoFo::PdfSimpleTableModel*>(object_pointer));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_draw(void* object_pointer, double dX, double dY, void* pPainter, void* rClipRect, double* pdLastX, double* pdLastY)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->Draw(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfPainter*>(pPainter), *static_cast<PoDoFo::PdfRect*>(rClipRect), static_cast<double*>(pdLastX), static_cast<double*>(pdLastY));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->Draw(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfPainter*>(pPainter), *static_cast<PoDoFo::PdfRect*>(rClipRect), static_cast<double*>(pdLastX), static_cast<double*>(pdLastY));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_get_width(void* object_pointer, double dX, double dY, void* pPage)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->GetWidth(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfCanvas*>(pPage));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->GetWidth(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfCanvasImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_get_height(void* object_pointer, double dX, double dY, void* pPage)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->GetHeight(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfCanvas*>(pPage));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->GetHeight(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfCanvasImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_column_widths(void* object_pointer, double* pdWidths)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetColumnWidths(static_cast<double*>(pdWidths));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetColumnWidths(static_cast<double*>(pdWidths));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_row_heights(void* object_pointer, double* pdHeights)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetRowHeights(static_cast<double*>(pdHeights));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetRowHeights(static_cast<double*>(pdHeights));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_column_width(void* object_pointer, double dWidth)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetColumnWidth(static_cast<double>(dWidth));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetColumnWidth(static_cast<double>(dWidth));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_row_height(void* object_pointer, double dHeight)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetRowHeight(static_cast<double>(dHeight));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetRowHeight(static_cast<double>(dHeight));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_table_width(void* object_pointer, double dWidth)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetTableWidth(static_cast<double>(dWidth));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetTableWidth(static_cast<double>(dWidth));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_table_height(void* object_pointer, double dHeight)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetTableHeight(static_cast<double>(dHeight));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetTableHeight(static_cast<double>(dHeight));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_table_get_cols_const(void* object_pointer)
 {
-    const PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    return static_cast<int32_t>(self->GetCols());
+    const PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetCols());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_table_get_rows_const(void* object_pointer)
 {
-    const PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    return static_cast<int32_t>(self->GetRows());
+    const PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetRows());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_get_model_const(void* object_pointer)
 {
-    const PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    return const_cast<PoDoFo::PdfTableModel*>(self->GetModel());
+    const PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    return new PoDoFo::PdfTableModelImpl((*self)->GetModel());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_set_model(void* object_pointer, void* model)
 {
-    PoDoFo::PdfTable* self = static_cast<PoDoFo::PdfTable*>(object_pointer);
-    self->SetModel(static_cast<PoDoFo::PdfTableModel*>(model));
+    PoDoFo::PdfTableImpl* self = static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
+    (*self)->SetModel(static_cast<PoDoFo::PdfTableModelImpl*>(model)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfTable*>(object_pointer);
+    delete static_cast<PoDoFo::PdfTableImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tiling_pattern_from_vec_objects(unsigned char eTilingType, double strokeR, double strokeG, double strokeB, uint8_t doFill, double fillR, double fillG, double fillB, double offsetX, double offsetY, void* pImage, void* pParent)
@@ -10010,7 +9695,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tiling_pattern_from_vec_obje
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tiling_pattern_from_document(unsigned char eTilingType, double strokeR, double strokeG, double strokeB, uint8_t doFill, double fillR, double fillG, double fillB, double offsetX, double offsetY, void* pImage, void* pParent)
 {
-    return new PoDoFo::PdfTilingPattern(static_cast<PoDoFo::EPdfTilingPatternType>(eTilingType), static_cast<double>(strokeR), static_cast<double>(strokeG), static_cast<double>(strokeB), static_cast<bool>(doFill), static_cast<double>(fillR), static_cast<double>(fillG), static_cast<double>(fillB), static_cast<double>(offsetX), static_cast<double>(offsetY), static_cast<PoDoFo::PdfImage*>(pImage), static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfTilingPattern(static_cast<PoDoFo::EPdfTilingPatternType>(eTilingType), static_cast<double>(strokeR), static_cast<double>(strokeG), static_cast<double>(strokeB), static_cast<bool>(doFill), static_cast<double>(fillR), static_cast<double>(fillG), static_cast<double>(fillB), static_cast<double>(offsetX), static_cast<double>(offsetY), static_cast<PoDoFo::PdfImage*>(pImage), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tiling_pattern_get_identifier_const(void* object_pointer)
@@ -10036,142 +9721,120 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tiling_pattern_cast_to_base(
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_identifier_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetIdentifier());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetIdentifier());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_get_object_reference_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfReference(self->GetObjectReference());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfReference((*self)->GetObjectReference());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_xobject_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfXObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfCanvas*>(static_cast<PoDoFo::PdfXObject*>(object_pointer));
+    delete static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_get_indirect_key_const(void* object_pointer, void* key)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetIndirectKey(*static_cast<PoDoFo::PdfName*>(key));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetIndirectKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_must_get_indirect_key_const(void* object_pointer, void* key)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->MustGetIndirectKey(*static_cast<PoDoFo::PdfName*>(key));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->MustGetIndirectKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_write_object_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt, void* keyStop)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), *static_cast<PoDoFo::PdfName*>(keyStop));
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->WriteObject(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), *static_cast<PoDoFo::PdfName*>(keyStop));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_get_object_length(void* object_pointer, unsigned char eWriteMode)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetObjectLength(static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetObjectLength(static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_reference_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return new PoDoFo::PdfReference(self->Reference());
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfReference((*self)->Reference());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_get_stream(void* object_pointer)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetStream();
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return (*self)->GetStream();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_has_stream_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<uint8_t>(self->HasStream());
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasStream());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_flate_compress_stream(void* object_pointer)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->FlateCompressStream();
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->FlateCompressStream();
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_get_byte_offset(void* object_pointer, const char* pszKey, unsigned char eWriteMode)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetByteOffset(static_cast<const char*>(pszKey), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetByteOffset(static_cast<const char*>(pszKey), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_delayed_stream_load_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->DelayedStreamLoad();
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->DelayedStreamLoad();
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_get_owner_const(void* object_pointer)
 {
-    const PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    return self->GetOwner();
+    const PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfVecObjects*>((*self)->GetOwner());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_set_owner(void* object_pointer, void* owner)
 {
-    PoDoFo::PdfObject* self = static_cast<PoDoFo::PdfObject*>(object_pointer);
-    self->SetOwner(static_cast<PoDoFo::PdfVecObjects*>(owner));
+    PoDoFo::PdfObjectImpl* self = static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
+    (*self)->SetOwner(static_cast<PoDoFo::PdfVecObjects*>(owner));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_object_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfVariant*>(static_cast<PoDoFo::PdfObject*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_variant_cast_to_po_do_fo_pdf_object_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfObject*>(static_cast<PoDoFo::PdfVariant*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_default()
@@ -10181,12 +9844,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_default()
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_from_pdf_object(void* var)
 {
-    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfObject*>(var));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_from_pdf_array(void* rhs)
-{
-    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfArray*>(rhs));
+    return new PoDoFo::PdfArray(*static_cast<PoDoFo::PdfObjectImpl*>(var)->get());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_get_size_const(void* object_pointer)
@@ -10204,7 +9862,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_clear(void* obj
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_contains_string_const(void* object_pointer, const char* cmpString)
@@ -10222,7 +9880,7 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_get_string_in
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_push_back(void* object_pointer, void* var)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->push_back(*static_cast<PoDoFo::PdfObject*>(var));
+    self->push_back(*static_cast<PoDoFo::PdfObjectImpl*>(var)->get());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_size_const(void* object_pointer)
@@ -10240,7 +9898,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_empty_const(
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_resize(void* object_pointer, size_t n, void* x)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    self->resize(static_cast<size_t>(n), *static_cast<PoDoFo::PdfObject*>(x));
+    self->resize(static_cast<size_t>(n), *static_cast<PoDoFo::PdfObjectImpl*>(x)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_begin(void* object_pointer)
@@ -10300,7 +9958,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_insert(void* ob
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_insert_1(void* object_pointer, void* position, void* val)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfArrayBaseClass::iterator(self->insert(*static_cast<PoDoFo::PdfArrayBaseClass::iterator*>(position), *static_cast<PoDoFo::PdfObject*>(val)));
+    return new PoDoFo::PdfArrayBaseClass::iterator(self->insert(*static_cast<PoDoFo::PdfArrayBaseClass::iterator*>(position), *static_cast<PoDoFo::PdfObjectImpl*>(val)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_erase(void* object_pointer, void* pos)
@@ -10321,28 +9979,28 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_reserve(void* o
     self->reserve(static_cast<size_t>(n));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_front(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_front(void* object_pointer)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->front());
+    return static_cast<void>(self->front());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_front_const(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_front_const(void* object_pointer)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->front());
+    return static_cast<void>(self->front());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_back(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_back(void* object_pointer)
 {
     PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->back());
+    return static_cast<void>(self->back());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_back_const(void* object_pointer)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_back_const(void* object_pointer)
 {
     const PoDoFo::PdfArray* self = static_cast<PoDoFo::PdfArray*>(object_pointer);
-    return new PoDoFo::PdfObject(self->back());
+    return static_cast<void>(self->back());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_is_dirty_const(void* object_pointer)
@@ -10364,14 +10022,14 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_delete(void* ob
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_array_raw_ptr_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfArray*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfArray*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_type_cast_to_po_do_fo_pdf_array_raw_ptr(void* source_object)
 {
     if (source_object)
     {
-        return dynamic_cast<PoDoFo::PdfArray*>(static_cast<PoDoFo::PdfDataType*>(source_object));
+        return dynamic_cast<PoDoFo::PdfArray*>((static_cast<PoDoFo::PdfDataTypeImpl*>(source_object))->get());
     }
     else
     {
@@ -10381,49 +10039,49 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_type_cast_to_po_do_fo_p
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_get_proc_set_const(void* object_pointer)
 {
-    const PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    return new PoDoFo::PdfArray(self->GetProcSet());
+    const PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    return new PoDoFo::PdfArray((*self)->GetProcSet());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_add_color_resource(void* object_pointer, void* rColor)
 {
-    PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    self->AddColorResource(*static_cast<PoDoFo::PdfColor*>(rColor));
+    PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    (*self)->AddColorResource(*static_cast<PoDoFo::PdfColor*>(rColor));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_add_resource(void* object_pointer, void* rIdentifier, void* rRef, void* rName)
 {
-    PoDoFo::PdfCanvas* self = static_cast<PoDoFo::PdfCanvas*>(object_pointer);
-    self->AddResource(*static_cast<PoDoFo::PdfName*>(rIdentifier), *static_cast<PoDoFo::PdfReference*>(rRef), *static_cast<PoDoFo::PdfName*>(rName));
+    PoDoFo::PdfCanvasImpl* self = static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
+    (*self)->AddResource(*static_cast<PoDoFo::PdfName*>(rIdentifier), *static_cast<PoDoFo::PdfReference*>(rRef), *static_cast<PoDoFo::PdfName*>(rName));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_canvas_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfCanvas*>(object_pointer);
+    delete static_cast<PoDoFo::PdfCanvasImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_new_pdf_data(const char* pszData)
@@ -10436,15 +10094,10 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_from_buffer(con
     return new PoDoFo::PdfData(static_cast<const char*>(pszData), static_cast<size_t>(dataSize));
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_from_other(void* rhs)
-{
-    return new PoDoFo::PdfData(*static_cast<PoDoFo::PdfData*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt)
 {
     const PoDoFo::PdfData* self = static_cast<PoDoFo::PdfData*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_data_const(void* object_pointer)
@@ -10460,14 +10113,14 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_delete(void* obj
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_raw_ptr_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfData*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfData*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_type_cast_to_po_do_fo_pdf_data_raw_ptr(void* source_object)
 {
     if (source_object)
     {
-        return dynamic_cast<PoDoFo::PdfData*>(static_cast<PoDoFo::PdfDataType*>(source_object));
+        return dynamic_cast<PoDoFo::PdfData*>((static_cast<PoDoFo::PdfDataTypeImpl*>(source_object))->get());
     }
     else
     {
@@ -10480,11 +10133,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_default()
     return new PoDoFo::PdfDictionary();
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_from_other(void* rhs)
-{
-    return new PoDoFo::PdfDictionary(*static_cast<PoDoFo::PdfDictionary*>(rhs));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_clear(void* object_pointer)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
@@ -10494,13 +10142,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_clear(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_add_key(void* object_pointer, void* identifier, void* rObject)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    self->AddKey(*static_cast<PoDoFo::PdfName*>(identifier), static_cast<PoDoFo::PdfObject*>(rObject));
+    self->AddKey(*static_cast<PoDoFo::PdfName*>(identifier), static_cast<PoDoFo::PdfObjectImpl*>(rObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_get_key(void* object_pointer, void* key)
 {
     PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    return self->GetKey(*static_cast<PoDoFo::PdfName*>(key));
+    return new PoDoFo::PdfObjectImpl(self->GetKey(*static_cast<PoDoFo::PdfName*>(key)));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_get_key_as_long_const(void* object_pointer, void* key, int64_t lDefault)
@@ -10542,13 +10190,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_remove_
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_write_const(void* object_pointer, void* pDevice, unsigned char eWriteMode, void* pEncrypt, void* keyStop)
 {
     const PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), *static_cast<PoDoFo::PdfName*>(keyStop));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_get_keys_const(void* object_pointer)
-{
-    const PoDoFo::PdfDictionary* self = static_cast<PoDoFo::PdfDictionary*>(object_pointer);
-    return new Bcapi::KeyMap<PoDoFo::PdfName,PoDoFo::PdfObject*>(self->GetKeys());
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), *static_cast<PoDoFo::PdfName*>(keyStop));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_is_dirty_const(void* object_pointer)
@@ -10570,14 +10212,14 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_delete(voi
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_dictionary_raw_ptr_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfDataType*>(static_cast<PoDoFo::PdfDictionary*>(object_pointer));
+    return new PoDoFo::PdfDataTypeImpl(static_cast<PoDoFo::PdfDictionary*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_type_cast_to_po_do_fo_pdf_dictionary_raw_ptr(void* source_object)
 {
     if (source_object)
     {
-        return dynamic_cast<PoDoFo::PdfDictionary*>(static_cast<PoDoFo::PdfDataType*>(source_object));
+        return dynamic_cast<PoDoFo::PdfDictionary*>((static_cast<PoDoFo::PdfDataTypeImpl*>(source_object))->get());
     }
     else
     {
@@ -10587,586 +10229,534 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_data_type_cast_to_po_do_fo_p
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_raw_ptr_add_to_dictionary(void* object_pointer, void* rDictionary)
 {
-    PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_raw_ptr_convert_to_unicode_const(void* object_pointer, void* rEncodedString, void* pFont)
 {
-    const PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    return new PoDoFo::PdfString(self->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->ConvertToUnicode(*static_cast<PoDoFo::PdfString*>(rEncodedString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encoding_raw_ptr_convert_to_encoding_const(void* object_pointer, void* rString, void* pFont)
 {
-    const PoDoFo::PdfEncoding* self = static_cast<PoDoFo::PdfEncoding*>(object_pointer);
-    return new PoDoFo::PdfRefCountedBuffer(self->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFont*>(pFont)));
+    const PoDoFo::PdfEncodingImpl* self = static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
+    return new PoDoFo::PdfRefCountedBuffer((*self)->ConvertToEncoding(*static_cast<PoDoFo::PdfString*>(rString), static_cast<PoDoFo::PdfFontImpl*>(pFont)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encoding_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfEncoding*>(object_pointer);
+    delete static_cast<PoDoFo::PdfEncodingImpl*>(object_pointer);
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_pdf_encrypt(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, unsigned char eAlgorithm, unsigned char eKeyLength)
+PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_encryption_enabled(void* object_pointer, uint8_t eAlgorithm)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncrypt::EPdfKeyLength>(eKeyLength));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_pdf_encrypt_1(void* object_pointer, void* pObject)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(static_cast<PoDoFo::PdfObject*>(pObject));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_pdf_encrypt_2(void* object_pointer, void* rhs)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreatePdfEncrypt(*static_cast<PoDoFo::PdfEncrypt*>(rhs));
-}
-
-PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_encryption_enabled(void* object_pointer, unsigned char eAlgorithm)
-{
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEncryptionEnabled(static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm)));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEncryptionEnabled(static_cast<PoDoFo::PdfEncryptImpl::EPdfEncryptAlgorithm>(eAlgorithm)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_generate_encryption_key(void* object_pointer, void* documentID)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->GenerateEncryptionKey(*static_cast<PoDoFo::PdfString*>(documentID));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->GenerateEncryptionKey(*static_cast<PoDoFo::PdfString*>(documentID));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_encryption_dictionary_const(void* object_pointer, void* rDictionary)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->CreateEncryptionDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->CreateEncryptionDictionary(*static_cast<PoDoFo::PdfDictionary*>(rDictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_encryption_output_stream(void* object_pointer, void* pOutputStream)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreateEncryptionOutputStream(static_cast<PoDoFo::PdfOutputStream*>(pOutputStream));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return (*self)->CreateEncryptionOutputStream(static_cast<PoDoFo::PdfOutputStreamImpl*>(pOutputStream)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_create_encryption_input_stream(void* object_pointer, void* pInputStream)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return self->CreateEncryptionInputStream(static_cast<PoDoFo::PdfInputStream*>(pInputStream));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return (*self)->CreateEncryptionInputStream(static_cast<PoDoFo::PdfInputStreamImpl*>(pInputStream)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_authenticate(void* object_pointer, const char* password, void* documentID)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->Authenticate(static_cast<const char*>(password), *static_cast<PoDoFo::PdfString*>(documentID)));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Authenticate(static_cast<const char*>(password), *static_cast<PoDoFo::PdfString*>(documentID)));
 }
 
-PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_encrypt_algorithm_const(void* object_pointer)
+PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_encrypt_algorithm_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<unsigned char>(self->GetEncryptAlgorithm());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetEncryptAlgorithm());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_uvalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetUValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetUValue());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_ovalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetOValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetOValue());
 }
 
 PODOFO_API const unsigned char* PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_encryption_key_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<const unsigned char*>(self->GetEncryptionKey());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<const unsigned char*>((*self)->GetEncryptionKey());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_pvalue_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetPValue());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetPValue());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_revision_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetRevision());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetRevision());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_key_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetKeyLength());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetKeyLength());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_is_metadata_encrypted_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<uint8_t>(self->IsMetadataEncrypted());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsMetadataEncrypted());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_encrypt_const(void* object_pointer, const unsigned char* inStr, int64_t inLen, unsigned char* outStr, int64_t outLen)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->Encrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<PoDoFo::pdf_long>(outLen));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->Encrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<PoDoFo::pdf_long>(outLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_decrypt_const(void* object_pointer, const unsigned char* inStr, int64_t inLen, unsigned char* outStr, void* outLen)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->Decrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<Bcapi::PdfLong*>(outLen)->GetReference());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->Decrypt(static_cast<const unsigned char*>(inStr), static_cast<PoDoFo::pdf_long>(inLen), static_cast<unsigned char*>(outStr), static_cast<Bcapi::PdfLongImpl*>(outLen)->GetReference());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_calculate_stream_length_const(void* object_pointer, int64_t length)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int64_t>(self->CalculateStreamLength(static_cast<PoDoFo::pdf_long>(length)));
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->CalculateStreamLength(static_cast<PoDoFo::pdf_long>(length)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_set_current_reference(void* object_pointer, void* rRef)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->SetCurrentReference(*static_cast<PoDoFo::PdfReference*>(rRef));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->SetCurrentReference(*static_cast<PoDoFo::PdfReference*>(rRef));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_get_enabled_encryption_algorithms_const(void* object_pointer)
 {
-    const PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    return static_cast<int32_t>(self->GetEnabledEncryptionAlgorithms());
+    const PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetEnabledEncryptionAlgorithms());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_set_enabled_encryption_algorithms(void* object_pointer, int32_t enabled_encryption_algorithms)
 {
-    PoDoFo::PdfEncrypt* self = static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
-    self->SetEnabledEncryptionAlgorithms(static_cast<int>(enabled_encryption_algorithms));
+    PoDoFo::PdfEncryptImpl* self = static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
+    (*self)->SetEnabledEncryptionAlgorithms(static_cast<int>(enabled_encryption_algorithms));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_encrypt_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfEncrypt*>(object_pointer);
+    delete static_cast<PoDoFo::PdfEncryptImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_close(void* object_pointer)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_tell_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int64_t>(self->Tell());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Tell());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_get_char_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int32_t>(self->GetChar());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetChar());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_look_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int32_t>(self->Look());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->Look());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_seek(void* object_pointer, int64_t off, char dir)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Seek(static_cast<std::streamoff>(off), static_cast<std::ios_base::seekdir>(dir));
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Seek(static_cast<std::streamoff>(off), static_cast<std::ios_base::seekdir>(dir));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_read(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<std::streamsize>(lLen)));
+    PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<std::streamsize>(lLen)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_eof_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->Eof());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Eof());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_bad_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->Bad());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->Bad());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_clear_const(void* object_pointer, unsigned state)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    self->Clear(static_cast<std::ios_base::iostate>(state));
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    (*self)->Clear(static_cast<std::ios_base::iostate>(state));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_is_seekable_const(void* object_pointer)
 {
-    const PoDoFo::PdfInputDevice* self = static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSeekable());
+    const PoDoFo::PdfInputDeviceImpl* self = static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSeekable());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_device_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfInputDevice*>(object_pointer);
+    delete static_cast<PoDoFo::PdfInputDeviceImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_input_stream_raw_ptr_read(void* object_pointer, char* pBuffer, int64_t lLen, void* pTotalLeft)
 {
-    PoDoFo::PdfInputStream* self = static_cast<PoDoFo::PdfInputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLong*>(pTotalLeft)->GetPointer()));
+    PoDoFo::PdfInputStreamImpl* self = static_cast<PoDoFo::PdfInputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen), static_cast<Bcapi::PdfLongImpl*>(pTotalLeft)->GetPointer()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_input_stream_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfInputStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfInputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->GetLength());
+    const PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_print(void* object_pointer, const char* pszFormat)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Print(static_cast<const char*>(pszFormat));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Print(static_cast<const char*>(pszFormat));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_write(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Write(static_cast<char*>(pBuffer), static_cast<size_t>(lLen));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Write(static_cast<char*>(pBuffer), static_cast<size_t>(lLen));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_read(void* object_pointer, char* pBuffer, size_t lLen)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->Read(static_cast<char*>(pBuffer), static_cast<size_t>(lLen)));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->Read(static_cast<char*>(pBuffer), static_cast<size_t>(lLen)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_seek(void* object_pointer, size_t offset)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Seek(static_cast<size_t>(offset));
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Seek(static_cast<size_t>(offset));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_tell_const(void* object_pointer)
 {
-    const PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    return static_cast<size_t>(self->Tell());
+    const PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->Tell());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_flush(void* object_pointer)
 {
-    PoDoFo::PdfOutputDevice* self = static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
-    self->Flush();
+    PoDoFo::PdfOutputDeviceImpl* self = static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
+    (*self)->Flush();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_device_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfOutputDevice*>(object_pointer);
+    delete static_cast<PoDoFo::PdfOutputDeviceImpl*>(object_pointer);
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_raw_ptr_write(void* object_pointer, const char* pBuffer, int64_t lLen)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(pBuffer), static_cast<PoDoFo::pdf_long>(lLen)));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_raw_ptr_write_1(void* object_pointer, const char* s)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    return static_cast<int64_t>(self->Write(static_cast<const char*>(s)));
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->Write(static_cast<const char*>(s)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_raw_ptr_close(void* object_pointer)
 {
-    PoDoFo::PdfOutputStream* self = static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfOutputStreamImpl* self = static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_output_stream_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfOutputStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfOutputStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_parse_file(void* object_pointer, const char* pszFileName, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(static_cast<const char*>(pszFileName), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<const char*>(pszFileName), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_parse_file_1(void* object_pointer, const char* pszFileName, int64_t lLen, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(static_cast<const char*>(pszFileName), static_cast<long>(lLen), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<const char*>(pszFileName), static_cast<long>(lLen), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_parse_file_2(void* object_pointer, void* rDevice, uint8_t bLoadOnDemand)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->ParseFile(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bLoadOnDemand));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->ParseFile(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bLoadOnDemand));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_quick_encrypted_check(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->QuickEncryptedCheck(static_cast<const char*>(pszFilename)));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->QuickEncryptedCheck(static_cast<const char*>(pszFilename)));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_number_of_incremental_updates_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumberOfIncrementalUpdates());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumberOfIncrementalUpdates());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfVecObjects*>(self->GetObjects());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_pdf_version_string_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<const char*>(self->GetPdfVersionString());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetPdfVersionString());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_trailer_const(void* object_pointer)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_trailer(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetTrailer());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetTrailer());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_load_on_demand_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->GetLoadOnDemand());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetLoadOnDemand());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_file_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<size_t>(self->GetFileSize());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<size_t>((*self)->GetFileSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_encrypt_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncrypt*>(self->GetEncrypt());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->GetEncrypt());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_take_encrypt(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return self->TakeEncrypt();
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->TakeEncrypt());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_set_password(void* object_pointer, const char* sPassword)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetPassword(static_cast<const char*>(sPassword));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetPassword(static_cast<const char*>(sPassword));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_is_strict_parsing_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->IsStrictParsing());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsStrictParsing());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_set_strict_parsing(void* object_pointer, uint8_t bStrict)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetStrictParsing(static_cast<bool>(bStrict));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetStrictParsing(static_cast<bool>(bStrict));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_xref_offset(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int64_t>(self->GetXRefOffset());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetXRefOffset());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_has_xref_stream(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->HasXRefStream());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasXRefStream());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_ignore_broken_objects(void* object_pointer)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<uint8_t>(self->GetIgnoreBrokenObjects());
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetIgnoreBrokenObjects());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_set_ignore_broken_objects(void* object_pointer, uint8_t ignore_broken_objects)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetIgnoreBrokenObjects(static_cast<bool>(ignore_broken_objects));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetIgnoreBrokenObjects(static_cast<bool>(ignore_broken_objects));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_get_max_object_count_const(void* object_pointer)
 {
-    const PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    return static_cast<int64_t>(self->GetMaxObjectCount());
+    const PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetMaxObjectCount());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_set_max_object_count(void* object_pointer, int64_t max_object_count)
 {
-    PoDoFo::PdfParser* self = static_cast<PoDoFo::PdfParser*>(object_pointer);
-    self->SetMaxObjectCount(static_cast<long>(max_object_count));
+    PoDoFo::PdfParserImpl* self = static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
+    (*self)->SetMaxObjectCount(static_cast<long>(max_object_count));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfParser*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfTokenizer*>(static_cast<PoDoFo::PdfParser*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_cast_to_po_do_fo_pdf_parser_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfParser*>(static_cast<PoDoFo::PdfTokenizer*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfParserImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_parse_file(void* object_pointer, void* pEncrypt, uint8_t bIsTrailer)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->ParseFile(static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<bool>(bIsTrailer));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->ParseFile(static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get(), static_cast<bool>(bIsTrailer));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_has_stream_to_parse_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<uint8_t>(self->HasStreamToParse());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasStreamToParse());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_is_load_on_demand_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLoadOnDemand());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLoadOnDemand());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_set_load_on_demand(void* object_pointer, uint8_t bDelayed)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->SetLoadOnDemand(static_cast<bool>(bDelayed));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->SetLoadOnDemand(static_cast<bool>(bDelayed));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_set_object_number(void* object_pointer, uint32_t nObjNo)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->SetObjectNumber(static_cast<unsigned>(nObjNo));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->SetObjectNumber(static_cast<unsigned>(nObjNo));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_free_object_memory(void* object_pointer, uint8_t bForce)
 {
-    PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    self->FreeObjectMemory(static_cast<bool>(bForce));
+    PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(static_cast<bool>(bForce));
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_get_offset_const(void* object_pointer)
 {
-    const PoDoFo::PdfParserObject* self = static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-    return static_cast<int64_t>(self->GetOffset());
+    const PoDoFo::PdfParserObjectImpl* self = static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetOffset());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfParserObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_parser_object_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfTokenizer*>(static_cast<PoDoFo::PdfParserObject*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_tokenizer_cast_to_po_do_fo_pdf_parser_object_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfParserObject*>(static_cast<PoDoFo::PdfTokenizer*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfParserObjectImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_default()
@@ -11182,11 +10772,6 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_f
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_from_size(size_t lSize)
 {
     return new PoDoFo::PdfRefCountedBuffer(static_cast<size_t>(lSize));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_from_other(void* rhs)
-{
-    return new PoDoFo::PdfRefCountedBuffer(*static_cast<PoDoFo::PdfRefCountedBuffer*>(rhs));
 }
 
 PODOFO_API char* PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_get_buffer_const(void* object_pointer)
@@ -11226,167 +10811,167 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_ref_counted_buffer_raw_ptr_de
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_write(void* object_pointer, void* pDevice, void* pEncrypt)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfEncryptImpl*>(pEncrypt)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set(void* object_pointer, const char* szBuffer, int64_t lLen, void* vecFilters)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set_1(void* object_pointer, const char* szBuffer, int64_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(szBuffer), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set_2(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<PoDoFo::PdfInputStream*>(pStream));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set_3(void* object_pointer, void* pStream, void* vecFilters)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<PoDoFo::PdfInputStream*>(pStream), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set_4(void* object_pointer, const char* pszString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Set(static_cast<const char*>(pszString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Set(static_cast<const char*>(pszString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_set_raw_data(void* object_pointer, void* pStream, int64_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->SetRawData(static_cast<PoDoFo::PdfInputStream*>(pStream), static_cast<PoDoFo::pdf_long>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->SetRawData(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), static_cast<PoDoFo::pdf_long>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_begin_append(void* object_pointer, uint8_t bClearExisting)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->BeginAppend(static_cast<bool>(bClearExisting));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->BeginAppend(static_cast<bool>(bClearExisting));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_begin_append_1(void* object_pointer, void* vecFilters, uint8_t bClearExisting, uint8_t bDeleteExisting)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->BeginAppend(*static_cast<PoDoFo::TVecFilters*>(vecFilters), static_cast<bool>(bClearExisting), static_cast<bool>(bDeleteExisting));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->BeginAppend(*static_cast<PoDoFo::TVecFilters*>(vecFilters), static_cast<bool>(bClearExisting), static_cast<bool>(bDeleteExisting));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_append(void* object_pointer, const char* pszString, size_t lLen)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*>(pszString), static_cast<size_t>(lLen));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*>(pszString), static_cast<size_t>(lLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_append_1(void* object_pointer, const char* pszString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*>(pszString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*>(pszString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_append_2(void* object_pointer, const char*& sString)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->Append(static_cast<const char*&>(sString));
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->Append(static_cast<const char*&>(sString));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_end_append(void* object_pointer)
 {
-    PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->EndAppend();
+    PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->EndAppend();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_is_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAppending());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAppending());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_get_length_const(void* object_pointer)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    return static_cast<int64_t>(self->GetLength());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetLength());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_get_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_get_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_get_filtered_copy_const(void* object_pointer, char** pBuffer, void* lLen)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetFilteredCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLong*>(lLen)->GetPointer());
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetFilteredCopy(static_cast<char**>(pBuffer), static_cast<Bcapi::PdfLongImpl*>(lLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_get_filtered_copy_const_1(void* object_pointer, void* pStream)
 {
-    const PoDoFo::PdfStream* self = static_cast<PoDoFo::PdfStream*>(object_pointer);
-    self->GetFilteredCopy(static_cast<PoDoFo::PdfOutputStream*>(pStream));
+    const PoDoFo::PdfStreamImpl* self = static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
+    (*self)->GetFilteredCopy(static_cast<PoDoFo::PdfOutputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_stream_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfStream*>(object_pointer);
+    delete static_cast<PoDoFo::PdfStreamImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_write_object(void* object_pointer, void* pObject)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfObject*>(pObject));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->WriteObject(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_parent_destructed(void* object_pointer)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->ParentDestructed();
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->ParentDestructed();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_begin_append_stream(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->BeginAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->BeginAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_end_append_stream(void* object_pointer, void* pStream)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->EndAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->EndAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_finish(void* object_pointer)
 {
-    PoDoFo::PdfVecObjects::Observer* self = static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
-    self->Finish();
+    PoDoFo::ObserverImpl* self = static_cast<PoDoFo::ObserverImpl*>(object_pointer);
+    (*self)->Finish();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_observer_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfVecObjects::Observer*>(object_pointer);
+    delete static_cast<PoDoFo::ObserverImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_stream_factory_raw_ptr_create_stream(void* object_pointer, void* pParent)
 {
-    PoDoFo::PdfVecObjects::StreamFactory* self = static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(object_pointer);
-    return self->CreateStream(static_cast<PoDoFo::PdfObject*>(pParent));
+    PoDoFo::StreamFactoryImpl* self = static_cast<PoDoFo::StreamFactoryImpl*>(object_pointer);
+    return (*self)->CreateStream(static_cast<PoDoFo::PdfObjectImpl*>(pParent)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_stream_factory_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(object_pointer);
+    delete static_cast<PoDoFo::StreamFactoryImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_tpdf_reference_list_raw_ptr_delete(void* object_pointer)
@@ -11437,7 +11022,7 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_obj
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_object_const(void* object_pointer, void* ref)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetObject(*static_cast<PoDoFo::PdfReference*>(ref));
+    return new PoDoFo::PdfObjectImpl(self->GetObject(*static_cast<PoDoFo::PdfReference*>(ref)));
 }
 
 PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_index_const(void* object_pointer, void* ref)
@@ -11449,25 +11034,25 @@ PODOFO_API size_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_ind
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_remove_object(void* object_pointer, void* ref, uint8_t bMarkAsFree)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->RemoveObject(*static_cast<PoDoFo::PdfReference*>(ref), static_cast<bool>(bMarkAsFree));
+    return new PoDoFo::PdfObjectImpl(self->RemoveObject(*static_cast<PoDoFo::PdfReference*>(ref), static_cast<bool>(bMarkAsFree)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_remove_object_1(void* object_pointer, void* it)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->RemoveObject(*static_cast<PoDoFo::TIVecObjects*>(it));
+    return new PoDoFo::PdfObjectImpl(self->RemoveObject(*static_cast<PoDoFo::TIVecObjects*>(it)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_create_object(void* object_pointer, const char* pszType)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateObject(static_cast<const char*>(pszType));
+    return new PoDoFo::PdfObjectImpl(self->CreateObject(static_cast<const char*>(pszType)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_create_object_1(void* object_pointer, void* rVariant)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateObject(*static_cast<PoDoFo::PdfVariant*>(rVariant));
+    return new PoDoFo::PdfObjectImpl(self->CreateObject(*static_cast<PoDoFo::PdfVariant*>(rVariant)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_add_free_object(void* object_pointer, void* rReference)
@@ -11485,19 +11070,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_free
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_renumber_objects(void* object_pointer, void* pTrailer, void* pNotDelete, uint8_t bDoGarbageCollection)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->RenumberObjects(static_cast<PoDoFo::PdfObject*>(pTrailer), static_cast<PoDoFo::TPdfReferenceSet*>(pNotDelete), static_cast<bool>(bDoGarbageCollection));
+    self->RenumberObjects(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get(), static_cast<PoDoFo::TPdfReferenceSet*>(pNotDelete), static_cast<bool>(bDoGarbageCollection));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_push_back(void* object_pointer, void* pObj)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->push_back(static_cast<PoDoFo::PdfObject*>(pObj));
+    self->push_back(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_insert_sorted(void* object_pointer, void* pObj)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->insert_sorted(static_cast<PoDoFo::PdfObject*>(pObj));
+    self->insert_sorted(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_sort(void* object_pointer)
@@ -11515,43 +11100,43 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_reserve(v
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_object_dependencies_const(void* object_pointer, void* pObj, void* pList)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->GetObjectDependencies(static_cast<PoDoFo::PdfObject*>(pObj), static_cast<PoDoFo::TPdfReferenceList*>(pList));
+    self->GetObjectDependencies(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), static_cast<PoDoFo::TPdfReferenceList*>(pList));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_attach(void* object_pointer, void* pObserver)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->Attach(static_cast<PoDoFo::PdfVecObjects::Observer*>(pObserver));
+    self->Attach(static_cast<PoDoFo::ObserverImpl*>(pObserver)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_detach(void* object_pointer, void* pObserver)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->Detach(static_cast<PoDoFo::PdfVecObjects::Observer*>(pObserver));
+    self->Detach(static_cast<PoDoFo::ObserverImpl*>(pObserver)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_set_stream_factory(void* object_pointer, void* pFactory)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->SetStreamFactory(static_cast<PoDoFo::PdfVecObjects::StreamFactory*>(pFactory));
+    self->SetStreamFactory(static_cast<PoDoFo::StreamFactoryImpl*>(pFactory)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_create_stream(void* object_pointer, void* pParent)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateStream(static_cast<PoDoFo::PdfObject*>(pParent));
+    return self->CreateStream(static_cast<PoDoFo::PdfObjectImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_create_stream_1(void* object_pointer, void* rhs)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->CreateStream(*static_cast<PoDoFo::PdfStream*>(rhs));
+    return self->CreateStream(*static_cast<PoDoFo::PdfStreamImpl*>(rhs)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_write_object(void* object_pointer, void* pObject)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->WriteObject(static_cast<PoDoFo::PdfObject*>(pObject));
+    self->WriteObject(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_finish(void* object_pointer)
@@ -11563,13 +11148,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_finish(vo
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_begin_append_stream(void* object_pointer, void* pStream)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->BeginAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    self->BeginAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_end_append_stream(void* object_pointer, void* pStream)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->EndAppendStream(static_cast<PoDoFo::PdfStream*>(pStream));
+    self->EndAppendStream(static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_begin(void* object_pointer)
@@ -11599,13 +11184,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_end_cons
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_back(void* object_pointer)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetBack();
+    return new PoDoFo::PdfObjectImpl(self->GetBack());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_collect_garbage(void* object_pointer, void* pTrailer)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->CollectGarbage(static_cast<PoDoFo::PdfObject*>(pTrailer));
+    self->CollectGarbage(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_next_subset_prefix(void* object_pointer)
@@ -11623,13 +11208,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_set_objec
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_parent_document_const(void* object_pointer)
 {
     const PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    return self->GetParentDocument();
+    return new PoDoFo::PdfDocumentImpl(self->GetParentDocument());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_set_parent_document(void* object_pointer, void* parent_document)
 {
     PoDoFo::PdfVecObjects* self = static_cast<PoDoFo::PdfVecObjects*>(object_pointer);
-    self->SetParentDocument(static_cast<PoDoFo::PdfDocument*>(parent_document));
+    self->SetParentDocument(static_cast<PoDoFo::PdfDocumentImpl*>(parent_document)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_get_can_reuse_object_numbers_const(void* object_pointer)
@@ -11651,12 +11236,12 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_vec_objects_raw_ptr_delete(vo
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_from_parser(void* pParser)
 {
-    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfParser*>(pParser));
+    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfParserImpl*>(pParser)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_new(void* pVecObjects, void* pTrailer)
 {
-    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObject*>(pTrailer));
+    return new PoDoFo::PdfWriter(static_cast<PoDoFo::PdfVecObjects*>(pVecObjects), static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_write(void* object_pointer, const char* pszFilename)
@@ -11668,19 +11253,19 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_write(void* ob
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_write_1(void* object_pointer, void* pDevice)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    self->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_write_update(void* object_pointer, void* pDevice, void* pSourceInputDevice, uint8_t bRewriteXRefTable)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::PdfInputDevice*>(pSourceInputDevice), static_cast<bool>(bRewriteXRefTable));
+    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get(), static_cast<PoDoFo::PdfInputDeviceImpl*>(pSourceInputDevice)->get(), static_cast<bool>(bRewriteXRefTable));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_set_encrypted(void* object_pointer, void* rEncrypt)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->SetEncrypted(*static_cast<PoDoFo::PdfEncrypt*>(rEncrypt));
+    self->SetEncrypted(*static_cast<PoDoFo::PdfEncryptImpl*>(rEncrypt)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_get_encrypted(void* object_pointer)
@@ -11698,19 +11283,19 @@ PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_get_pdf
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_get_byte_offset(void* object_pointer, void* pObject, void* pulOffset)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->GetByteOffset(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<Bcapi::PdfLong*>(pulOffset)->GetPointer());
+    self->GetByteOffset(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<Bcapi::PdfLongImpl*>(pulOffset)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_write_to_buffer(void* object_pointer, char** ppBuffer, void* pulLen)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->WriteToBuffer(static_cast<char**>(ppBuffer), static_cast<Bcapi::PdfLong*>(pulLen)->GetPointer());
+    self->WriteToBuffer(static_cast<char**>(ppBuffer), static_cast<Bcapi::PdfLongImpl*>(pulLen)->GetPointer());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_fill_trailer_object(void* object_pointer, void* pTrailer, int64_t lSize, uint8_t bOnlySizeKey)
 {
     PoDoFo::PdfWriter* self = static_cast<PoDoFo::PdfWriter*>(object_pointer);
-    self->FillTrailerObject(static_cast<PoDoFo::PdfObject*>(pTrailer), static_cast<PoDoFo::pdf_long>(lSize), static_cast<bool>(bOnlySizeKey));
+    self->FillTrailerObject(static_cast<PoDoFo::PdfObjectImpl*>(pTrailer)->get(), static_cast<PoDoFo::pdf_long>(lSize), static_cast<bool>(bOnlySizeKey));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_get_write_mode_const(void* object_pointer)
@@ -11792,18 +11377,18 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_writer_raw_ptr_delete(void* o
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_raw_ptr_default(void* pDoc, unsigned char eDefaultAppearance)
 {
-    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocument*>(pDoc), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get(), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_raw_ptr_from_object(void* pDoc, void* pObject, unsigned char eDefaultAppearance)
 {
-    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocument*>(pDoc), static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    return new PoDoFo::PdfAcroForm(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_raw_ptr_get_document(void* object_pointer)
 {
     PoDoFo::PdfAcroForm* self = static_cast<PoDoFo::PdfAcroForm*>(object_pointer);
-    return self->GetDocument();
+    return new PoDoFo::PdfDocumentImpl(self->GetDocument());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_acro_form_raw_ptr_get_need_appearances_const(void* object_pointer)
@@ -11842,82 +11427,65 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_has_script_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return static_cast<uint8_t>(self->HasScript());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasScript());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_get_type_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return static_cast<unsigned char>(self->GetType());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetType());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_add_to_dictionary_const(void* object_pointer, void* dictionary)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(dictionary));
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->AddToDictionary(*static_cast<PoDoFo::PdfDictionary*>(dictionary));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_get_uri_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetURI());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetURI());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_set_uri(void* object_pointer, void* uri)
 {
-    PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->SetURI(*static_cast<PoDoFo::PdfString*>(uri));
+    PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->SetURI(*static_cast<PoDoFo::PdfString*>(uri));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_get_script_const(void* object_pointer)
 {
-    const PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetScript());
+    const PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetScript());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_set_script(void* object_pointer, void* script)
 {
-    PoDoFo::PdfAction* self = static_cast<PoDoFo::PdfAction*>(object_pointer);
-    self->SetScript(*static_cast<PoDoFo::PdfString*>(script));
+    PoDoFo::PdfActionImpl* self = static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
+    (*self)->SetScript(*static_cast<PoDoFo::PdfString*>(script));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfAction*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_action_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfAction*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf_action_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfAction*>(static_cast<PoDoFo::PdfElement*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfActionImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_default(void* pPage, unsigned char eAnnot, void* rRect, void* pParent)
 {
-    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfAnnotation>(eAnnot), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfVecObjects*>(pParent));
+    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfAnnotation>(eAnnot), *static_cast<PoDoFo::PdfRect*>(rRect), static_cast<PoDoFo::PdfVecObjects*>(pParent));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_from_object(void* pObject, void* pPage)
 {
-    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfPage*>(pPage));
+    return new PoDoFo::PdfAnnotation(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_appearance_stream(void* object_pointer, void* pObject, unsigned char eAppearance, void* state)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
+    self->SetAppearanceStream(static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<PoDoFo::EPdfAnnotationAppearance>(eAppearance), *static_cast<PoDoFo::PdfName*>(state));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_has_appearance_stream_const(void* object_pointer)
@@ -11932,7 +11500,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_rect_
     return new PoDoFo::PdfRect(self->GetRect());
 }
 
-PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_border_style(void* object_pointer, double dHCorner, double dVCorner, double dWidth, void* rStrokeStyle)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_border_style(void* object_pointer, double dHCorner, double dVCorner, double dWidth)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetBorderStyle(static_cast<double>(dHCorner), static_cast<double>(dVCorner), static_cast<double>(dWidth));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_border_style_1(void* object_pointer, double dHCorner, double dVCorner, double dWidth, void* rStrokeStyle)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
     self->SetBorderStyle(static_cast<double>(dHCorner), static_cast<double>(dVCorner), static_cast<double>(dWidth), *static_cast<PoDoFo::PdfArray*>(rStrokeStyle));
@@ -11941,7 +11515,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_border
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_destination_const(void* object_pointer, void* pDoc)
 {
     const PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    return new PoDoFo::PdfDestination(self->GetDestination(static_cast<PoDoFo::PdfDocument*>(pDoc)));
+    return new PoDoFo::PdfDestination(self->GetDestination(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_destination(void* object_pointer, void* rDestination)
@@ -11978,6 +11552,24 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_color(
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
     self->SetColor(static_cast<double>(r), static_cast<double>(g), static_cast<double>(b));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_color_1(void* object_pointer, double c, double m, double y, double k)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor(static_cast<double>(c), static_cast<double>(m), static_cast<double>(y), static_cast<double>(k));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_color_2(void* object_pointer, double gray)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor(static_cast<double>(gray));
+}
+
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_color_3(void* object_pointer)
+{
+    PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
+    self->SetColor();
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_type_const(void* object_pointer)
@@ -12037,7 +11629,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_actio
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_action(void* object_pointer, void* action)
 {
     PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    self->SetAction(*static_cast<PoDoFo::PdfAction*>(action));
+    self->SetAction(*static_cast<PoDoFo::PdfActionImpl*>(action)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_open_const(void* object_pointer)
@@ -12055,7 +11647,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_open(v
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_get_file_attachement_const(void* object_pointer)
 {
     const PoDoFo::PdfAnnotation* self = static_cast<PoDoFo::PdfAnnotation*>(object_pointer);
-    return self->GetFileAttachement();
+    return static_cast<PoDoFo::PdfFileSpec*>(self->GetFileAttachement());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_annotation_raw_ptr_set_file_attachement(void* object_pointer, void* file_attachement)
@@ -12105,43 +11697,38 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_default(
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_object(void* pObject, void* pDocument)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfDocument*>(pDocument));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfDocumentImpl*>(pDocument)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_vec_objects(void* pObject, void* pVecObjects)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfVecObjects*>(pVecObjects));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_page_and_destination(void* pPage, unsigned char eFit)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfDestinationFit>(eFit));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfDestinationFit>(eFit));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_page_and_rect(void* pPage, void* rRect)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), *static_cast<PoDoFo::PdfRect*>(rRect));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), *static_cast<PoDoFo::PdfRect*>(rRect));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_page_and_dist_params(void* pPage, double dLeft, double dTop, double dZoom)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<double>(dLeft), static_cast<double>(dTop), static_cast<double>(dZoom));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<double>(dLeft), static_cast<double>(dTop), static_cast<double>(dZoom));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_page_and_dist_value(void* pPage, unsigned char eFit, double dValue)
 {
-    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPage*>(pPage), static_cast<PoDoFo::EPdfDestinationFit>(eFit), static_cast<double>(dValue));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_from_other(void* rhs)
-{
-    return new PoDoFo::PdfDestination(*static_cast<PoDoFo::PdfDestination*>(rhs));
+    return new PoDoFo::PdfDestination(static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<PoDoFo::EPdfDestinationFit>(eFit), static_cast<double>(dValue));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_get_page(void* object_pointer, void* pDoc)
 {
     PoDoFo::PdfDestination* self = static_cast<PoDoFo::PdfDestination*>(object_pointer);
-    return self->GetPage(static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return self->GetPage(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_get_page_1(void* object_pointer, void* pVecObjects)
@@ -12189,7 +11776,7 @@ PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_get_dva
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_get_object_const(void* object_pointer)
 {
     const PoDoFo::PdfDestination* self = static_cast<PoDoFo::PdfDestination*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetObject());
+    return new PoDoFo::PdfObjectImpl(self->GetObject());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_get_array_const(void* object_pointer)
@@ -12211,319 +11798,319 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_destination_raw_ptr_delete(vo
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_info_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetInfo();
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfInfo*>((*self)->GetInfo());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_outlines(void* object_pointer, uint8_t bCreate)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetOutlines(static_cast<bool>(bCreate));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfOutlines*>((*self)->GetOutlines(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_names_tree(void* object_pointer, uint8_t bCreate)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetNamesTree(static_cast<bool>(bCreate));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfNamesTree*>((*self)->GetNamesTree(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_acro_form(void* object_pointer, uint8_t bCreate, unsigned char eDefaultAppearance)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetAcroForm(static_cast<bool>(bCreate), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfAcroForm*>((*self)->GetAcroForm(static_cast<bool>(bCreate), static_cast<PoDoFo::EPdfAcroFormDefaulAppearance>(eDefaultAppearance)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_pages_tree_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetPagesTree();
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->GetPagesTree();
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_page_count_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<int32_t>(self->GetPageCount());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetPageCount());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_page_const(void* object_pointer, int32_t nIndex)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetPage(static_cast<int>(nIndex));
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->GetPage(static_cast<int>(nIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_font(void* object_pointer, const char* pszFontName, uint8_t bSymbolCharset, void* pEncoding, unsigned char eFontCreationFlags, uint8_t bEmbedd)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_font_1(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, void* pEncoding, unsigned char eFontCreationFlags, uint8_t bEmbedd, const char* pszFileName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd), static_cast<const char*>(pszFileName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<PoDoFo::PdfFontCache::EFontCreationFlags>(eFontCreationFlags), static_cast<bool>(bEmbedd), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_font_2(void* object_pointer, void* face, uint8_t bSymbolCharset, void* pEncoding, uint8_t bEmbedd)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<bool>(bEmbedd));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFont(static_cast<FT_Face>(face), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<bool>(bEmbedd)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_duplicate_font_type1(void* object_pointer, void* pFont, const char* pszSuffix)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateDuplicateFontType1(static_cast<PoDoFo::PdfFont*>(pFont), static_cast<const char*>(pszSuffix));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateDuplicateFontType1(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get(), static_cast<const char*>(pszSuffix)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_font_subset(void* object_pointer, const char* pszFontName, uint8_t bBold, uint8_t bItalic, uint8_t bSymbolCharset, void* pEncoding, const char* pszFileName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreateFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncoding*>(pEncoding), static_cast<const char*>(pszFileName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->CreateFontSubset(static_cast<const char*>(pszFontName), static_cast<bool>(bBold), static_cast<bool>(bItalic), static_cast<bool>(bSymbolCharset), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get(), static_cast<const char*>(pszFileName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_font_library_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<void*>(self->GetFontLibrary());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<void*>((*self)->GetFontLibrary());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_embed_subset_fonts(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->EmbedSubsetFonts();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->EmbedSubsetFonts();
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_page(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return (*self)->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_create_pages(void* object_pointer, void* vecSizes)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_insert_page(void* object_pointer, void* rSize, int32_t atIndex)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_append(void* object_pointer, void* rDoc, uint8_t bAppendAll)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfDocument*>(&self->Append(*static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<bool>(bAppendAll)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfDocumentImpl(&(*self)->Append(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<bool>(bAppendAll)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_insert_existing_page_at(void* object_pointer, void* rDoc, int32_t nPageIndex, int32_t nAtIndex)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfDocument*>(&self->InsertExistingPageAt(*static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(nPageIndex), static_cast<int>(nAtIndex)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfDocumentImpl(&(*self)->InsertExistingPageAt(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<int>(nPageIndex), static_cast<int>(nAtIndex)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_fill_xobject_from_document_page(void* object_pointer, void* pXObj, void* rDoc, int32_t nPage, uint8_t bUseTrimBox)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromDocumentPage(static_cast<PoDoFo::PdfXObject*>(pXObj), *static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromDocumentPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc)->get(), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_fill_xobject_from_existing_page(void* object_pointer, void* pXObj, int32_t nPage, uint8_t bUseTrimBox)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromExistingPage(static_cast<PoDoFo::PdfXObject*>(pXObj), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromExistingPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<int>(nPage), static_cast<bool>(bUseTrimBox)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_fill_xobject_from_page(void* object_pointer, void* pXObj, void* pPage, uint8_t bUseTrimBox, uint32_t difference)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return new PoDoFo::PdfRect(self->FillXObjectFromPage(static_cast<PoDoFo::PdfXObject*>(pXObj), static_cast<PoDoFo::PdfPage*>(pPage), static_cast<bool>(bUseTrimBox), static_cast<unsigned>(difference)));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->FillXObjectFromPage(static_cast<PoDoFo::PdfXObjectImpl*>(pXObj)->get(), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get(), static_cast<bool>(bUseTrimBox), static_cast<unsigned>(difference)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_attach_file(void* object_pointer, void* rFileSpec)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->AttachFile(*static_cast<PoDoFo::PdfFileSpec*>(rFileSpec));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->AttachFile(*static_cast<PoDoFo::PdfFileSpec*>(rFileSpec));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_attachment(void* object_pointer, void* rName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetAttachment(*static_cast<PoDoFo::PdfString*>(rName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<PoDoFo::PdfFileSpec*>((*self)->GetAttachment(*static_cast<PoDoFo::PdfString*>(rName)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_add_named_destination(void* object_pointer, void* rDest, void* rsName)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->AddNamedDestination(*static_cast<PoDoFo::PdfDestination*>(rDest), *static_cast<PoDoFo::PdfString*>(rsName));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->AddNamedDestination(*static_cast<PoDoFo::PdfDestination*>(rDest), *static_cast<PoDoFo::PdfString*>(rsName));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_use_full_screen(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetUseFullScreen();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetUseFullScreen();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_hide_toolbar(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideToolbar();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideToolbar();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_hide_menubar(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideMenubar();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideMenubar();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_hide_window_ui(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetHideWindowUI();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetHideWindowUI();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_fit_window(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetFitWindow();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetFitWindow();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_center_window(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetCenterWindow();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetCenterWindow();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_display_doc_title(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetDisplayDocTitle();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetDisplayDocTitle();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_print_scaling(void* object_pointer, void* inScalingType)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetPrintScaling(*static_cast<PoDoFo::PdfName*>(inScalingType));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetPrintScaling(*static_cast<PoDoFo::PdfName*>(inScalingType));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_base_uri(void* object_pointer, const char* inBaseURI)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetBaseURI(static_cast<const char*>(inBaseURI));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetBaseURI(static_cast<const char*>(inBaseURI));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_language(void* object_pointer, const char* inLanguage)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetLanguage(static_cast<const char*>(inLanguage));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetLanguage(static_cast<const char*>(inLanguage));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_binding_direction(void* object_pointer, void* inDirection)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetBindingDirection(*static_cast<PoDoFo::PdfName*>(inDirection));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetBindingDirection(*static_cast<PoDoFo::PdfName*>(inDirection));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_objects(void* object_pointer)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return self->GetObjects();
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfVecObjects*>(self->GetObjects());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return const_cast<PoDoFo::PdfVecObjects*>((*self)->GetObjects());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_font_config_wrapper(void* object_pointer, void* rFontConfig)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetFontConfigWrapper(*static_cast<PoDoFo::PdfFontConfigWrapper*>(rFontConfig));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetFontConfigWrapper(*static_cast<PoDoFo::PdfFontConfigWrapper*>(rFontConfig));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_get_page_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPageMode());
+    const PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPageMode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_set_page_mode(void* object_pointer, unsigned char page_mode)
 {
-    PoDoFo::PdfDocument* self = static_cast<PoDoFo::PdfDocument*>(object_pointer);
-    self->SetPageMode(static_cast<PoDoFo::EPdfPageMode>(page_mode));
+    PoDoFo::PdfDocumentImpl* self = static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
+    (*self)->SetPageMode(static_cast<PoDoFo::EPdfPageMode>(page_mode));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_document_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfDocument*>(object_pointer);
+    delete static_cast<PoDoFo::PdfDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_raw_ptr_from_vec_objects(void* pParent)
@@ -12533,7 +12120,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_raw_ptr_from_vec_
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_raw_ptr_from_document(void* pParent)
 {
-    return new PoDoFo::PdfExtGState(static_cast<PoDoFo::PdfDocument*>(pParent));
+    return new PoDoFo::PdfExtGState(static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_ext_gstate_raw_ptr_get_identifier_const(void* object_pointer)
@@ -12626,7 +12213,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_document(const char* pszFilename, uint8_t bEmbedd, void* pParent, uint8_t bStripPath)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bStripPath));
+    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<bool>(bEmbedd), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bStripPath));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_vec_objects(const char* pszFilename, uint8_t bEmbedd, void* pParent, uint8_t bStripPath)
@@ -12636,7 +12223,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_vec_o
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_buffer_and_document(const char* pszFilename, const unsigned char* data, int size, void* pParent, uint8_t bStripPath)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<const unsigned char*>(data), static_cast<ptrdiff_t>(size), static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<bool>(bStripPath));
+    return new PoDoFo::PdfFileSpec(static_cast<const char*>(pszFilename), static_cast<const unsigned char*>(data), static_cast<ptrdiff_t>(size), static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<bool>(bStripPath));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_buffer_and_vec_objects(const char* pszFilename, const unsigned char* data, int size, void* pParent, uint8_t bStripPath)
@@ -12646,7 +12233,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_buffe
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_from_object(void* pObject)
 {
-    return new PoDoFo::PdfFileSpec(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfFileSpec(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_file_spec_raw_ptr_get_filename_const(void* object_pointer, uint8_t canUnicode)
@@ -12679,691 +12266,616 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_is_bold_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsBold());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsBold());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_is_italic_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsItalic());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsItalic());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_strike_out(void* object_pointer, uint8_t bStrikeOut)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetStrikeOut(static_cast<bool>(bStrikeOut));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetStrikeOut(static_cast<bool>(bStrikeOut));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_is_strike_out_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsStrikeOut());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsStrikeOut());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_identifier_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetIdentifier());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetIdentifier());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_encoding_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncoding*>(self->GetEncoding());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfEncodingImpl((*self)->GetEncoding());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_font_metrics_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return const_cast<PoDoFo::PdfFontMetrics*>(self->GetFontMetrics());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfFontMetricsImpl((*self)->GetFontMetrics());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_font_metrics2(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return self->GetFontMetrics2();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return new PoDoFo::PdfFontMetricsImpl((*self)->GetFontMetrics2());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_write_string_to_stream(void* object_pointer, void* rsString, void* pStream)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(rsString), static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(rsString), static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_embed_font(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->EmbedFont();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->EmbedFont();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_add_used_subsetting_glyphs(void* object_pointer, void* sText, int64_t lStringLen)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<long>(lStringLen));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->AddUsedSubsettingGlyphs(*static_cast<PoDoFo::PdfString*>(sText), static_cast<long>(lStringLen));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_write_string_to_stream_1(void* object_pointer, void* pszGlyphName, void* pStream)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(pszGlyphName), static_cast<PoDoFo::PdfStream*>(pStream));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->WriteStringToStream(*static_cast<PoDoFo::PdfString*>(pszGlyphName), static_cast<PoDoFo::PdfStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_embed_subset_font(void* object_pointer)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->EmbedSubsetFont();
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->EmbedSubsetFont();
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_is_subsetting_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSubsetting());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSubsetting());
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_font_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontSize());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontSize());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_font_size(void* object_pointer, float font_size)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontSize(static_cast<float>(font_size));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontSize(static_cast<float>(font_size));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_font_scale_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontScale());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontScale());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_font_scale(void* object_pointer, float font_scale)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontScale(static_cast<float>(font_scale));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontScale(static_cast<float>(font_scale));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_font_char_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetFontCharSpace());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontCharSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_font_char_space(void* object_pointer, float font_char_space)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetFontCharSpace(static_cast<float>(font_char_space));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetFontCharSpace(static_cast<float>(font_char_space));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_get_word_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<float>(self->GetWordSpace());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetWordSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_word_space(void* object_pointer, float word_space)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetWordSpace(static_cast<float>(word_space));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetWordSpace(static_cast<float>(word_space));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_is_underlined_const(void* object_pointer)
 {
-    const PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    return static_cast<uint8_t>(self->IsUnderlined());
+    const PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsUnderlined());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_set_underlined(void* object_pointer, uint8_t underlined)
 {
-    PoDoFo::PdfFont* self = static_cast<PoDoFo::PdfFont*>(object_pointer);
-    self->SetUnderlined(static_cast<bool>(underlined));
+    PoDoFo::PdfFontImpl* self = static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
+    (*self)->SetUnderlined(static_cast<bool>(underlined));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFont*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfFont*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf_font_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfFont*>(static_cast<PoDoFo::PdfElement*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfFontImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<int>(nGlyphId)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<int>(nGlyphId)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_glyph_width_const_1(void* object_pointer, const char* pszGlyphname)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_bounding_box_const(void* object_pointer, void* array)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const(void* object_pointer, void* rsString)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(*static_cast<PoDoFo::PdfString*>(rsString)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(*static_cast<PoDoFo::PdfString*>(rsString)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_1(void* object_pointer, const char* pszText, int64_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const char*>(pszText), static_cast<PoDoFo::pdf_long>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const char*>(pszText), static_cast<PoDoFo::pdf_long>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_2(void* object_pointer, uint16_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_3(void* object_pointer, const wchar_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_4(void* object_pointer, const char* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const char*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const char*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_5(void* object_pointer, uint16_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<PoDoFo::pdf_utf16be*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_string_width_const_6(void* object_pointer, const wchar_t* pszText, uint32_t nLength)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->StringWidth(static_cast<const wchar_t*>(pszText), static_cast<unsigned>(nLength)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->CharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->CharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_unicode_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->UnicodeCharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->UnicodeCharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_char_width_mm_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->CharWidthMM(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->CharWidthMM(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_line_spacing_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_line_spacing_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetLineSpacingMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetLineSpacingMM());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_underline_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_line_spacing_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_line_spacing_mm_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacingMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacingMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_underline_thickness_const_1(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_underline_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetUnderlinePosition());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlinePosition());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_underline_position_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetUnderlinePositionMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetUnderlinePositionMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_strike_out_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetStrikeOutPosition());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeOutPosition());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_strike_out_position_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetStrikeOutPositionMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetStrikeOutPositionMM());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_strikeout_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetStrikeoutThickness());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeoutThickness());
 }
 
 PODOFO_API uint64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_strikeout_thickness_mm_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint64_t>(self->GetStrikeoutThicknessMM());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint64_t>((*self)->GetStrikeoutThicknessMM());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_filename_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFilename());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFilename());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_data_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFontData());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontData());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_data_len_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetFontDataLen());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFontDataLen());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_fontname_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetFontname());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontname());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_subset_fontname_prefix_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<const char*>(self->GetSubsetFontnamePrefix());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetSubsetFontnamePrefix());
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_weight_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint32_t>(self->GetWeight());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetWeight());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetAscent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_pdf_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetPdfAscent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetDescent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetDescent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_pdf_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<double>(self->GetPdfDescent());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfDescent());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_italic_angle_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int32_t>(self->GetItalicAngle());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetItalicAngle());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_type_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<unsigned char>(self->GetFontType());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetFontType());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_glyph_id_const(void* object_pointer, int64_t lUnicode)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<int64_t>(self->GetGlyphId(static_cast<long>(lUnicode)));
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetGlyphId(static_cast<long>(lUnicode)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_is_symbol_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSymbol());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSymbol());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_font_type_from_filename(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<unsigned char>(self->FontTypeFromFilename(static_cast<const char*>(pszFilename)));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->FontTypeFromFilename(static_cast<const char*>(pszFilename)));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontSize());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontSize());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_set_font_size(void* object_pointer, float font_size)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontSize(static_cast<float>(font_size));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontSize(static_cast<float>(font_size));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_scale_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontScale());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontScale());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_set_font_scale(void* object_pointer, float font_scale)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontScale(static_cast<float>(font_scale));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontScale(static_cast<float>(font_scale));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_font_char_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetFontCharSpace());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetFontCharSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_set_font_char_space(void* object_pointer, float font_char_space)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetFontCharSpace(static_cast<float>(font_char_space));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetFontCharSpace(static_cast<float>(font_char_space));
 }
 
 PODOFO_API float PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_get_word_space_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    return static_cast<float>(self->GetWordSpace());
+    const PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    return static_cast<float>((*self)->GetWordSpace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_set_word_space(void* object_pointer, float word_space)
 {
-    PoDoFo::PdfFontMetrics* self = static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
-    self->SetWordSpace(static_cast<float>(word_space));
+    PoDoFo::PdfFontMetricsImpl* self = static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
+    (*self)->SetWordSpace(static_cast<float>(word_space));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontMetrics*>(object_pointer);
+    delete static_cast<PoDoFo::PdfFontMetricsImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_create_for_subsetting(void* object_pointer, void* pLibrary, const char* pszFilename, uint8_t pIsSymbol, const char* pszSubsetPrefix)
 {
-    PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return self->CreateForSubsetting(static_cast<FT_Library*>(pLibrary), static_cast<const char*>(pszFilename), static_cast<bool>(pIsSymbol), static_cast<const char*>(pszSubsetPrefix));
+    PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return (*self)->CreateForSubsetting(static_cast<FT_Library*>(pLibrary), static_cast<const char*>(pszFilename), static_cast<bool>(pIsSymbol), static_cast<const char*>(pszSubsetPrefix));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_width_array_const(void* object_pointer, void* var, uint32_t nFirst, uint32_t nLast, void* pEncoding)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    self->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncoding*>(pEncoding));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    (*self)->GetWidthArray(*static_cast<PoDoFo::PdfVariant*>(var), static_cast<unsigned>(nFirst), static_cast<unsigned>(nLast), static_cast<PoDoFo::PdfEncodingImpl*>(pEncoding)->get());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_glyph_width_const(void* object_pointer, int32_t nGlyphId)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<int>(nGlyphId)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<int>(nGlyphId)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_glyph_width_const_1(void* object_pointer, const char* pszGlyphname)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetGlyphWidth(static_cast<const char*>(pszGlyphname)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_bounding_box_const(void* object_pointer, void* array)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    self->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    (*self)->GetBoundingBox(*static_cast<PoDoFo::PdfArray*>(array));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->CharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->CharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_unicode_char_width_const(void* object_pointer, uint8_t c)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->UnicodeCharWidth(static_cast<unsigned char>(c)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->UnicodeCharWidth(static_cast<unsigned char>(c)));
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_line_spacing_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetLineSpacing());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetLineSpacing());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_underline_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetUnderlineThickness());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlineThickness());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_underline_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetUnderlinePosition());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetUnderlinePosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_strike_out_position_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetStrikeOutPosition());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeOutPosition());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_strikeout_thickness_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetStrikeoutThickness());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetStrikeoutThickness());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_fontname_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<const char*>(self->GetFontname());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontname());
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_weight_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint32_t>(self->GetWeight());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetWeight());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetAscent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_pdf_ascent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetPdfAscent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfAscent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetDescent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetDescent());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_pdf_descent_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<double>(self->GetPdfDescent());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetPdfDescent());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_italic_angle_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int32_t>(self->GetItalicAngle());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetItalicAngle());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_glyph_id_const(void* object_pointer, int64_t lUnicode)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int64_t>(self->GetGlyphId(static_cast<long>(lUnicode)));
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetGlyphId(static_cast<long>(lUnicode)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_is_symbol_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsSymbol());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsSymbol());
 }
 
 PODOFO_API const char* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_font_data_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<const char*>(self->GetFontData());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<const char*>((*self)->GetFontData());
 }
 
 PODOFO_API int64_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_font_data_len_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<int64_t>(self->GetFontDataLen());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<int64_t>((*self)->GetFontDataLen());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_is_bold_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsBold());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsBold());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_is_italic_const(void* object_pointer)
 {
-    const PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<uint8_t>(self->IsItalic());
+    const PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsItalic());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_get_face(void* object_pointer)
 {
-    PoDoFo::PdfFontMetricsFreetype* self = static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-    return static_cast<void*>(self->GetFace());
+    PoDoFo::PdfFontMetricsFreetypeImpl* self = static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
+    return static_cast<void*>((*self)->GetFace());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_freetype_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontMetrics*>(static_cast<PoDoFo::PdfFontMetricsFreetype*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_metrics_cast_to_po_do_fo_pdf_font_metrics_freetype_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfFontMetricsFreetype*>(static_cast<PoDoFo::PdfFontMetrics*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfFontMetricsFreetypeImpl*>(object_pointer);
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfFontType1*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_type1_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfFontSimple*>(static_cast<PoDoFo::PdfFontType1*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf_font_type1_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfFontType1*>(static_cast<PoDoFo::PdfElement*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_cast_to_po_do_fo_pdf_font_type1_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfFontType1*>(static_cast<PoDoFo::PdfFont*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_font_simple_cast_to_po_do_fo_pdf_font_type1_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfFontType1*>(static_cast<PoDoFo::PdfFontSimple*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfFontType1Impl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_from_vec_objects(void* pParent, const char* pszPrefix)
@@ -13373,12 +12885,12 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_from_vec_objec
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_from_document(void* pParent, const char* pszPrefix)
 {
-    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfDocument*>(pParent), static_cast<const char*>(pszPrefix));
+    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfDocumentImpl*>(pParent)->get(), static_cast<const char*>(pszPrefix));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_from_object(void* pObject)
 {
-    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfImage(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API const char** PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_get_supported_formats(void* object_pointer)
@@ -13396,7 +12908,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_color
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_iccprofile(void* object_pointer, void* pStream, int64_t lColorComponents, unsigned char eAlternateColorSpace)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageICCProfile(static_cast<PoDoFo::PdfInputStream*>(pStream), static_cast<long>(lColorComponents), static_cast<PoDoFo::EPdfColorSpace>(eAlternateColorSpace));
+    self->SetImageICCProfile(static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), static_cast<long>(lColorComponents), static_cast<PoDoFo::EPdfColorSpace>(eAlternateColorSpace));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_softmask(void* object_pointer, void* pSoftmask)
@@ -13420,19 +12932,19 @@ PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_get_height_co
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_data(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream));
+    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_data_1(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream, void* vecFilters)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
+    self->SetImageData(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get(), *static_cast<PoDoFo::TVecFilters*>(vecFilters));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_set_image_data_raw(void* object_pointer, uint32_t nWidth, uint32_t nHeight, uint32_t nBitsPerComponent, void* pStream)
 {
     PoDoFo::PdfImage* self = static_cast<PoDoFo::PdfImage*>(object_pointer);
-    self->SetImageDataRaw(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStream*>(pStream));
+    self->SetImageDataRaw(static_cast<unsigned>(nWidth), static_cast<unsigned>(nHeight), static_cast<unsigned>(nBitsPerComponent), static_cast<PoDoFo::PdfInputStreamImpl*>(pStream)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_load_from_file(void* object_pointer, const char* pszFilename)
@@ -13478,26 +12990,14 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_delete(void* ob
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_image_raw_ptr_cast_to_base(void* object_pointer)
 {
-    return static_cast<PoDoFo::PdfXObject*>(static_cast<PoDoFo::PdfImage*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_cast_to_po_do_fo_pdf_image_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfImage*>(static_cast<PoDoFo::PdfCanvas*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    return new PoDoFo::PdfXObjectImpl(static_cast<PoDoFo::PdfImage*>(object_pointer));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_cast_to_po_do_fo_pdf_image_raw_ptr(void* source_object)
 {
     if (source_object)
     {
-        return dynamic_cast<PoDoFo::PdfImage*>(static_cast<PoDoFo::PdfXObject*>(source_object));
+        return dynamic_cast<PoDoFo::PdfImage*>((static_cast<PoDoFo::PdfXObjectImpl*>(source_object))->get());
     }
     else
     {
@@ -13512,7 +13012,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_raw_ptr_from_vec_object
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_raw_ptr_from_object(void* pObject, int32_t eInitial)
 {
-    return new PoDoFo::PdfInfo(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<int>(eInitial));
+    return new PoDoFo::PdfInfo(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<int>(eInitial));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_info_raw_ptr_get_creation_date_const(void* object_pointer)
@@ -13641,288 +13141,270 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_load(void* object_pointer, const char* pszFilename, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(static_cast<const char*>(pszFilename), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(static_cast<const char*>(pszFilename), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_load_1(void* object_pointer, const char* pBuffer, int64_t lLen, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(static_cast<const char*>(pBuffer), static_cast<long>(lLen), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(static_cast<const char*>(pBuffer), static_cast<long>(lLen), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_load_2(void* object_pointer, void* rDevice, uint8_t bForUpdate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Load(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bForUpdate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Load(*static_cast<PoDoFo::PdfRefCountedInputDevice*>(rDevice), static_cast<bool>(bForUpdate));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_loaded_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLoaded());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLoaded());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_write(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Write(static_cast<const char*>(pszFilename));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Write(static_cast<const char*>(pszFilename));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_write_1(void* object_pointer, void* pDevice)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->Write(static_cast<PoDoFo::PdfOutputDevice*>(pDevice));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->Write(static_cast<PoDoFo::PdfOutputDeviceImpl*>(pDevice)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_write_update(void* object_pointer, const char* pszFilename)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->WriteUpdate(static_cast<const char*>(pszFilename));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->WriteUpdate(static_cast<const char*>(pszFilename));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_write_update_1(void* object_pointer, void* rDevice, uint8_t bTruncate)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->WriteUpdate(static_cast<PoDoFo::PdfOutputDevice*>(rDevice), static_cast<bool>(bTruncate));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->WriteUpdate(static_cast<PoDoFo::PdfOutputDeviceImpl*>(rDevice)->get(), static_cast<bool>(bTruncate));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_add_pdf_extension(void* object_pointer, const char* ns, int64_t level)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->AddPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->AddPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_has_pdf_extension_const(void* object_pointer, const char* ns, int64_t level)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->HasPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level)));
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasPdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_remove_pdf_extension(void* object_pointer, const char* ns, int64_t level)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->RemovePdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->RemovePdfExtension(static_cast<const char*>(ns), static_cast<PoDoFo::pdf_int64>(level));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_pdf_extensions_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new Bcapi::Vector<PoDoFo::PdfExtension>(self->GetPdfExtensions());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new Bcapi::Vector<PoDoFo::PdfExtension>((*self)->GetPdfExtensions());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_password(void* object_pointer, const char* sPassword)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetPassword(static_cast<const char*>(sPassword));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetPassword(static_cast<const char*>(sPassword));
 }
 
-PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_encrypted(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, unsigned char eAlgorithm, unsigned char eKeyLength)
+PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_encrypted(void* object_pointer, const char* userPassword, const char* ownerPassword, int32_t protection, uint8_t eAlgorithm, unsigned char eKeyLength)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetEncrypted(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncrypt::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncrypt::EPdfKeyLength>(eKeyLength));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetEncrypted(static_cast<const char*>(userPassword), static_cast<const char*>(ownerPassword), static_cast<int>(protection), static_cast<PoDoFo::PdfEncryptImpl::EPdfEncryptAlgorithm>(eAlgorithm), static_cast<PoDoFo::PdfEncryptImpl::EPdfKeyLength>(eKeyLength));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_encrypted_1(void* object_pointer, void* eKeyLength)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetEncrypted(*static_cast<PoDoFo::PdfEncrypt*>(eKeyLength));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetEncrypted(*static_cast<PoDoFo::PdfEncryptImpl*>(eKeyLength)->get());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_encrypted_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->GetEncrypted());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->GetEncrypted());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_objects_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new PoDoFo::PdfVecObjects(self->GetObjects());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_objects(void* object_pointer)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return new PoDoFo::PdfVecObjects(self->GetObjects());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfVecObjects((*self)->GetObjects());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_catalog(void* object_pointer)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<PoDoFo::PdfObject*>(self->GetCatalog());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetCatalog());
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_catalog_const(void* object_pointer)
+PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_catalog_1(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetCatalog());
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetCatalog());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_trailer_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetTrailer());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetTrailer());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_struct_tree_root_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetStructTreeRoot();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetStructTreeRoot());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_metadata_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetMetadata();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetMetadata());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_mark_info_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetMarkInfo();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetMarkInfo());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_language_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetLanguage();
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetLanguage());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_font(void* object_pointer, void* pObject)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return self->GetFont(static_cast<PoDoFo::PdfObject*>(pObject));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetFont(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get()));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_insert_pages(void* object_pointer, void* rDoc, int32_t inFirstPage, int32_t inNumPages)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfMemDocument*>(&self->InsertPages(static_cast<PoDoFo::PdfMemDocument*>(rDoc), static_cast<int>(inFirstPage), static_cast<int>(inNumPages)));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfMemDocumentImpl(&(*self)->InsertPages(static_cast<PoDoFo::PdfMemDocumentImpl*>(rDoc), static_cast<int>(inFirstPage), static_cast<int>(inNumPages)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_delete_pages(void* object_pointer, int32_t inFirstPage, int32_t inNumPages)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->DeletePages(static_cast<int>(inFirstPage), static_cast<int>(inNumPages));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->DeletePages(static_cast<int>(inFirstPage), static_cast<int>(inNumPages));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_free_object_memory(void* object_pointer, void* rRef, uint8_t bForce)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->FreeObjectMemory(*static_cast<PoDoFo::PdfReference*>(rRef), static_cast<bool>(bForce));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(*static_cast<PoDoFo::PdfReference*>(rRef), static_cast<bool>(bForce));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_free_object_memory_1(void* object_pointer, void* pObj, uint8_t bForce)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->FreeObjectMemory(static_cast<PoDoFo::PdfObject*>(pObj), static_cast<bool>(bForce));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->FreeObjectMemory(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), static_cast<bool>(bForce));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_encrypt_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return const_cast<PoDoFo::PdfEncrypt*>(self->GetEncrypt());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return new PoDoFo::PdfEncryptImpl((*self)->GetEncrypt());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_write_mode(void* object_pointer, unsigned char write_mode)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetWriteMode(static_cast<PoDoFo::EPdfWriteMode>(write_mode));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetWriteMode(static_cast<PoDoFo::EPdfWriteMode>(write_mode));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_set_pdf_version(void* object_pointer, unsigned char pdf_version)
 {
-    PoDoFo::PdfMemDocument* self = static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-    self->SetPdfVersion(static_cast<PoDoFo::EPdfVersion>(pdf_version));
+    PoDoFo::PdfMemDocumentImpl* self = static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
+    (*self)->SetPdfVersion(static_cast<PoDoFo::EPdfVersion>(pdf_version));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfMemDocument*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_mem_document_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfDocument*>(static_cast<PoDoFo::PdfMemDocument*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_cast_to_po_do_fo_pdf_mem_document_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfMemDocument*>(static_cast<PoDoFo::PdfDocument*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfMemDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_from_vec_objects(void* pParent)
@@ -13932,19 +13414,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_from_vec_
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_from_object(void* pObject, void* pCatalog)
 {
-    return new PoDoFo::PdfNamesTree(static_cast<PoDoFo::PdfObject*>(pObject), static_cast<PoDoFo::PdfObject*>(pCatalog));
+    return new PoDoFo::PdfNamesTree(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get(), static_cast<PoDoFo::PdfObjectImpl*>(pCatalog)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_add_value(void* object_pointer, void* tree, void* key, void* rValue)
 {
     PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    self->AddValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key), *static_cast<PoDoFo::PdfObject*>(rValue));
+    self->AddValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key), *static_cast<PoDoFo::PdfObjectImpl*>(rValue)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_get_value_const(void* object_pointer, void* tree, void* key)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key));
+    return new PoDoFo::PdfObjectImpl(self->GetValue(*static_cast<PoDoFo::PdfName*>(tree), *static_cast<PoDoFo::PdfString*>(key)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_has_value_const(void* object_pointer, void* tree, void* key)
@@ -13956,7 +13438,7 @@ PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_has_val
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_check_limits(void* object_pointer, void* pObj, void* key)
 {
     PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return static_cast<unsigned char>(self->CheckLimits(static_cast<PoDoFo::PdfObject*>(pObj), *static_cast<PoDoFo::PdfString*>(key)));
+    return static_cast<unsigned char>(self->CheckLimits(static_cast<PoDoFo::PdfObjectImpl*>(pObj)->get(), *static_cast<PoDoFo::PdfString*>(key)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_to_dictionary(void* object_pointer, void* dictionary, void* rDict)
@@ -13968,13 +13450,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_to_diction
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_get_java_script_node_const(void* object_pointer, uint8_t bCreate)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetJavaScriptNode(static_cast<bool>(bCreate));
+    return new PoDoFo::PdfObjectImpl(self->GetJavaScriptNode(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_get_dests_node_const(void* object_pointer, uint8_t bCreate)
 {
     const PoDoFo::PdfNamesTree* self = static_cast<PoDoFo::PdfNamesTree*>(object_pointer);
-    return self->GetDestsNode(static_cast<bool>(bCreate));
+    return new PoDoFo::PdfObjectImpl(self->GetDestsNode(static_cast<bool>(bCreate)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_names_tree_raw_ptr_delete(void* object_pointer)
@@ -14002,19 +13484,19 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_create_child(void* object_pointer, void* sTitle, void* rDest)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateChild(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateChild(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_create_next(void* object_pointer, void* sTitle, void* rDest)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfDestination*>(rDest)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_create_next_1(void* object_pointer, void* sTitle, void* rAction)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfAction*>(rAction));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateNext(*static_cast<PoDoFo::PdfString*>(sTitle), *static_cast<PoDoFo::PdfActionImpl*>(rAction)->get()));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_insert_child(void* object_pointer, void* pItem)
@@ -14026,31 +13508,31 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_insert_c
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_prev_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Prev();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Prev());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_next_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Next();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Next());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_first_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->First();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->First());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_last_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->Last();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->Last());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_get_parent_outline_const(void* object_pointer)
 {
     const PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->GetParentOutline();
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->GetParentOutline());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_erase(void* object_pointer)
@@ -14068,7 +13550,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_set_dest
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_get_destination(void* object_pointer, void* pDoc)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    return self->GetDestination(static_cast<PoDoFo::PdfDocument*>(pDoc));
+    return self->GetDestination(static_cast<PoDoFo::PdfDocumentImpl*>(pDoc)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_set_text_color(void* object_pointer, double r, double g, double b)
@@ -14104,7 +13586,7 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_get_act
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_set_action(void* object_pointer, void* action)
 {
     PoDoFo::PdfOutlineItem* self = static_cast<PoDoFo::PdfOutlineItem*>(object_pointer);
-    self->SetAction(*static_cast<PoDoFo::PdfAction*>(action));
+    self->SetAction(*static_cast<PoDoFo::PdfActionImpl*>(action)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_raw_ptr_get_title_const(void* object_pointer)
@@ -14160,13 +13642,13 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_raw_ptr_from_parent
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_raw_ptr_from_object(void* pObject)
 {
-    return new PoDoFo::PdfOutlines(static_cast<PoDoFo::PdfObject*>(pObject));
+    return new PoDoFo::PdfOutlines(static_cast<PoDoFo::PdfObjectImpl*>(pObject)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outlines_raw_ptr_create_root(void* object_pointer, void* sTitle)
 {
     PoDoFo::PdfOutlines* self = static_cast<PoDoFo::PdfOutlines*>(object_pointer);
-    return self->CreateRoot(*static_cast<PoDoFo::PdfString*>(sTitle));
+    return static_cast<PoDoFo::PdfOutlineItem*>(self->CreateRoot(*static_cast<PoDoFo::PdfString*>(sTitle)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_outlines_raw_ptr_delete(void* object_pointer)
@@ -14205,262 +13687,228 @@ PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_outline_item_cast_to_po_do_f
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_set_page_width(void* object_pointer, int32_t newWidth)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint8_t>(self->SetPageWidth(static_cast<int>(newWidth)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->SetPageWidth(static_cast<int>(newWidth)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_set_page_height(void* object_pointer, int32_t newHeight)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint8_t>(self->SetPageHeight(static_cast<int>(newHeight)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->SetPageHeight(static_cast<int>(newHeight)));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_set_trim_box(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->SetTrimBox(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->SetTrimBox(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API uint32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_page_number_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<uint32_t>(self->GetPageNumber());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<uint32_t>((*self)->GetPageNumber());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_create_standard_page_size(void* object_pointer, unsigned char ePageSize, uint8_t bLandscape)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->CreateStandardPageSize(static_cast<PoDoFo::EPdfPageSize>(ePageSize), static_cast<bool>(bLandscape)));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->CreateStandardPageSize(static_cast<PoDoFo::EPdfPageSize>(ePageSize), static_cast<bool>(bLandscape)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_media_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetMediaBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetMediaBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_crop_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetCropBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetCropBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_trim_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetTrimBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetTrimBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_bleed_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetBleedBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetBleedBox());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_art_box_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetArtBox());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetArtBox());
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_num_annots_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumAnnots());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumAnnots());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_create_annotation(void* object_pointer, unsigned char eType, void* rRect)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->CreateAnnotation(static_cast<PoDoFo::EPdfAnnotation>(eType), *static_cast<PoDoFo::PdfRect*>(rRect));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return (*self)->CreateAnnotation(static_cast<PoDoFo::EPdfAnnotation>(eType), *static_cast<PoDoFo::PdfRect*>(rRect));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_annotation(void* object_pointer, int32_t index)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetAnnotation(static_cast<int>(index));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return (*self)->GetAnnotation(static_cast<int>(index));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_delete_annotation(void* object_pointer, int32_t index)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->DeleteAnnotation(static_cast<int>(index));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->DeleteAnnotation(static_cast<int>(index));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_delete_annotation_1(void* object_pointer, void* ref)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->DeleteAnnotation(*static_cast<PoDoFo::PdfReference*>(ref));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->DeleteAnnotation(*static_cast<PoDoFo::PdfReference*>(ref));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_num_fields_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetNumFields());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetNumFields());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_field_const(void* object_pointer, int32_t index)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return new PoDoFo::PdfField(self->GetField(static_cast<int>(index)));
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfField((*self)->GetField(static_cast<int>(index)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_from_resources(void* object_pointer, void* rType, void* rKey)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetFromResources(*static_cast<PoDoFo::PdfName*>(rType), *static_cast<PoDoFo::PdfName*>(rKey));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetFromResources(*static_cast<PoDoFo::PdfName*>(rType), *static_cast<PoDoFo::PdfName*>(rKey)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_inherited_key_const(void* object_pointer, void* rName)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return const_cast<PoDoFo::PdfObject*>(self->GetInheritedKey(*static_cast<PoDoFo::PdfName*>(rName)));
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetInheritedKey(*static_cast<PoDoFo::PdfName*>(rName)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_own_annotations_array(void* object_pointer, uint8_t bCreate, void* pDocument)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return self->GetOwnAnnotationsArray(static_cast<bool>(bCreate), static_cast<PoDoFo::PdfDocument*>(pDocument));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetOwnAnnotationsArray(static_cast<bool>(bCreate), static_cast<PoDoFo::PdfDocumentImpl*>(pDocument)->get()));
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_get_rotation_const(void* object_pointer)
 {
-    const PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    return static_cast<int32_t>(self->GetRotation());
+    const PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetRotation());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_set_rotation(void* object_pointer, int32_t rotation)
 {
-    PoDoFo::PdfPage* self = static_cast<PoDoFo::PdfPage*>(object_pointer);
-    self->SetRotation(static_cast<int>(rotation));
+    PoDoFo::PdfPageImpl* self = static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
+    (*self)->SetRotation(static_cast<int>(rotation));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfPage*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_page_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfPage*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf_page_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfPage*>(static_cast<PoDoFo::PdfElement*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfPageImpl*>(object_pointer);
 }
 
 PODOFO_API int32_t PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_get_total_number_of_pages_const(void* object_pointer)
 {
-    const PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return static_cast<int32_t>(self->GetTotalNumberOfPages());
+    const PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return static_cast<int32_t>((*self)->GetTotalNumberOfPages());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_get_page(void* object_pointer, int32_t nIndex)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->GetPage(static_cast<int>(nIndex));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->GetPage(static_cast<int>(nIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_get_page_1(void* object_pointer, void* ref)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->GetPage(*static_cast<PoDoFo::PdfReference*>(ref));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->GetPage(*static_cast<PoDoFo::PdfReference*>(ref));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_insert_page(void* object_pointer, int32_t nAfterPageIndex, void* pPage)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfPage*>(pPage));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfPageImpl*>(pPage)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_insert_page_1(void* object_pointer, int32_t nAfterPageIndex, void* pPage)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfObject*>(pPage));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->InsertPage(static_cast<int>(nAfterPageIndex), static_cast<PoDoFo::PdfObjectImpl*>(pPage)->get());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_insert_page_2(void* object_pointer, void* rSize, int32_t atIndex)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->InsertPage(*static_cast<PoDoFo::PdfRect*>(rSize), static_cast<int>(atIndex));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_create_page(void* object_pointer, void* rSize)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    return self->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    return (*self)->CreatePage(*static_cast<PoDoFo::PdfRect*>(rSize));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_create_pages(void* object_pointer, void* vecSizes)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->CreatePages(static_cast<Bcapi::Vector<PoDoFo::PdfRect>*>(vecSizes)->GetStdVector());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_delete_page(void* object_pointer, int32_t inPageNumber)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->DeletePage(static_cast<int>(inPageNumber));
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->DeletePage(static_cast<int>(inPageNumber));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_clear_cache(void* object_pointer)
 {
-    PoDoFo::PdfPagesTree* self = static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-    self->ClearCache();
+    PoDoFo::PdfPagesTreeImpl* self = static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
+    (*self)->ClearCache();
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfPagesTree*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_pages_tree_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfElement*>(static_cast<PoDoFo::PdfPagesTree*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_element_cast_to_po_do_fo_pdf_pages_tree_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfPagesTree*>(static_cast<PoDoFo::PdfElement*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfPagesTreeImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_default()
@@ -14573,7 +14021,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_line_join
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_font(void* object_pointer, void* pFont)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->SetFont(static_cast<PoDoFo::PdfFont*>(pFont));
+    self->SetFont(static_cast<PoDoFo::PdfFontImpl*>(pFont)->get());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_text_rendering_mode(void* object_pointer, unsigned char mode)
@@ -14591,7 +14039,7 @@ PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_get_
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_get_font_const(void* object_pointer)
 {
     const PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    return self->GetFont();
+    return new PoDoFo::PdfFontImpl(self->GetFont());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_clip_rect(void* object_pointer, double dX, double dY, double dWidth, double dHeight)
@@ -14681,7 +14129,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_end_text(void
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_draw_glyph(void* object_pointer, void* pDocument, double dX, double dY, const char* pszGlyphname)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->DrawGlyph(static_cast<PoDoFo::PdfMemDocument*>(pDocument), static_cast<double>(dX), static_cast<double>(dY), static_cast<const char*>(pszGlyphname));
+    self->DrawGlyph(static_cast<PoDoFo::PdfMemDocumentImpl*>(pDocument)->get(), static_cast<double>(dX), static_cast<double>(dY), static_cast<const char*>(pszGlyphname));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_draw_image(void* object_pointer, double dX, double dY, void* pObject, double dScaleX, double dScaleY)
@@ -14693,7 +14141,7 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_draw_image(vo
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_draw_xobject(void* object_pointer, double dX, double dY, void* pObject, double dScaleX, double dScaleY)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->DrawXObject(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfXObject*>(pObject), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
+    self->DrawXObject(static_cast<double>(dX), static_cast<double>(dY), static_cast<PoDoFo::PdfXObjectImpl*>(pObject)->get(), static_cast<double>(dScaleX), static_cast<double>(dScaleY));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_close_path(void* object_pointer)
@@ -14831,13 +14279,13 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_rendering
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_get_page_const(void* object_pointer)
 {
     const PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    return self->GetPage();
+    return new PoDoFo::PdfCanvasImpl(self->GetPage());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_set_page(void* object_pointer, void* page)
 {
     PoDoFo::PdfPainter* self = static_cast<PoDoFo::PdfPainter*>(object_pointer);
-    self->SetPage(static_cast<PoDoFo::PdfCanvas*>(page));
+    self->SetPage(static_cast<PoDoFo::PdfCanvasImpl*>(page)->get());
 }
 
 PODOFO_API uint16_t PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_get_tab_width_const(void* object_pointer)
@@ -14869,247 +14317,203 @@ PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_painter_raw_ptr_delete(void* 
     delete static_cast<PoDoFo::PdfPainter*>(object_pointer);
 }
 
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_from_device(void* pDevice, unsigned char eVersion, void* pEncrypt, unsigned char eWriteMode)
-{
-    return new PoDoFo::PdfStreamedDocument(static_cast<PoDoFo::PdfOutputDevice*>(pDevice), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_from_file(const char* pszFilename, unsigned char eVersion, void* pEncrypt, unsigned char eWriteMode)
-{
-    return new PoDoFo::PdfStreamedDocument(static_cast<const char*>(pszFilename), static_cast<PoDoFo::EPdfVersion>(eVersion), static_cast<PoDoFo::PdfEncrypt*>(pEncrypt), static_cast<PoDoFo::EPdfWriteMode>(eWriteMode));
-}
-
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_close(void* object_pointer)
 {
-    PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    self->Close();
+    PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    (*self)->Close();
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_get_write_mode_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetWriteMode());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetWriteMode());
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_get_pdf_version_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<unsigned char>(self->GetPdfVersion());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetPdfVersion());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_linearized_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsLinearized());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsLinearized());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsPrintAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsPrintAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_edit_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_copy_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsCopyAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsCopyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_edit_notes_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsEditNotesAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsEditNotesAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_fill_and_sign_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsFillAndSignAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsFillAndSignAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_accessibility_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsAccessibilityAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsAccessibilityAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_doc_assembly_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsDocAssemblyAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsDocAssemblyAllowed());
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_is_high_print_allowed_const(void* object_pointer)
 {
-    const PoDoFo::PdfStreamedDocument* self = static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-    return static_cast<uint8_t>(self->IsHighPrintAllowed());
+    const PoDoFo::PdfStreamedDocumentImpl* self = static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->IsHighPrintAllowed());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_streamed_document_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfDocument*>(static_cast<PoDoFo::PdfStreamedDocument*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_document_cast_to_po_do_fo_pdf_streamed_document_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfStreamedDocument*>(static_cast<PoDoFo::PdfDocument*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfStreamedDocumentImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_text_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfString(self->GetText(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfString((*self)->GetText(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_alignment_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<unsigned char>(self->GetAlignment(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetAlignment(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API unsigned char PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_vertical_alignment_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<unsigned char>(self->GetVerticalAlignment(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<unsigned char>((*self)->GetVerticalAlignment(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_font_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return self->GetFont(static_cast<int>(col), static_cast<int>(row));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfFontImpl((*self)->GetFont(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_has_background_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_background_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetBackgroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_foreground_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetForegroundColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetForegroundColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_has_word_wrap_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasWordWrap(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasWordWrap(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_has_borders_const(void* object_pointer)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasBorders());
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasBorders());
 }
 
 PODOFO_API double PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_border_width_const(void* object_pointer)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<double>(self->GetBorderWidth());
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<double>((*self)->GetBorderWidth());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_border_color_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return new PoDoFo::PdfColor(self->GetBorderColor(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return new PoDoFo::PdfColor((*self)->GetBorderColor(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API uint8_t PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_has_image_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return static_cast<uint8_t>(self->HasImage(static_cast<int>(col), static_cast<int>(row)));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return static_cast<uint8_t>((*self)->HasImage(static_cast<int>(col), static_cast<int>(row)));
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_get_image_const(void* object_pointer, int32_t col, int32_t row)
 {
-    const PoDoFo::PdfTableModel* self = static_cast<PoDoFo::PdfTableModel*>(object_pointer);
-    return self->GetImage(static_cast<int>(col), static_cast<int>(row));
+    const PoDoFo::PdfTableModelImpl* self = static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
+    return (*self)->GetImage(static_cast<int>(col), static_cast<int>(row));
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_table_model_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfTableModel*>(object_pointer);
+    delete static_cast<PoDoFo::PdfTableModelImpl*>(object_pointer);
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_contents_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetContents();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContents());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_contents_for_appending_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetContentsForAppending();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetContentsForAppending());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_resources_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return self->GetResources();
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfObjectImpl((*self)->GetResources());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_page_size_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfRect(self->GetPageSize());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfRect((*self)->GetPageSize());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_identifier_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfName(self->GetIdentifier());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfName((*self)->GetIdentifier());
 }
 
 PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_get_object_reference_const(void* object_pointer)
 {
-    const PoDoFo::PdfXObject* self = static_cast<PoDoFo::PdfXObject*>(object_pointer);
-    return new PoDoFo::PdfReference(self->GetObjectReference());
+    const PoDoFo::PdfXObjectImpl* self = static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
+    return new PoDoFo::PdfReference((*self)->GetObjectReference());
 }
 
 PODOFO_API void PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_delete(void* object_pointer)
 {
-    delete static_cast<PoDoFo::PdfXObject*>(object_pointer);
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_xobject_raw_ptr_cast_to_base(void* object_pointer)
-{
-    return static_cast<PoDoFo::PdfCanvas*>(static_cast<PoDoFo::PdfXObject*>(object_pointer));
-}
-
-PODOFO_API void* PODOFO_API_CONVENTION po_do_fo_pdf_canvas_cast_to_po_do_fo_pdf_xobject_raw_ptr(void* source_object)
-{
-    if (source_object)
-    {
-        return dynamic_cast<PoDoFo::PdfXObject*>(static_cast<PoDoFo::PdfCanvas*>(source_object));
-    }
-    else
-    {
-        return 0;
-    }
+    delete static_cast<PoDoFo::PdfXObjectImpl*>(object_pointer);
 }

@@ -33,24 +33,35 @@
 
 #include <map>
 
-#include "PoDoFo/base/PdfName.h"
-#include "PoDoFo/base/PdfObject.h"
+#include "boost/shared_ptr.hpp"
+#include "boost/make_shared.hpp"
 
 namespace Bcapi{
-    
-    template <class T1, class T2>
+    template <class T1, template <typename> class T2, typename T > 
     class KeyMap
     {
-        std::map<T1, T2> mMap;
+        std::map<T1, T2<T> > mMap;
     public:
-        KeyMap(const std::map<T1, T2>& std_map)
+        KeyMap(const std::map<T1, T2<T> >& std_map)
         {
-            mMap = std_map;
+            
+                mMap = std_map;
+            
         }
-                
-        std::map<T1, T2>& GetStdMap()
+        
+        KeyMap(const std::map<T1, T>& std_map)
+        {
+            mMap = new std::map<T1, T2<T> >;
+            for (auto it = std_map.begin(); it != std_map.end(); it++)            
+                mMap.insert(std::pair<T1, T2<T> >((*it).first, boost::shared_ptr<T>((*it).second)));   
+
+        }
+                 
+        std::map<T1, T>& GetStdMap()
         {
             return mMap;
         }
+        
     };
+    
 }

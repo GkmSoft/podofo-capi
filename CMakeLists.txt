@@ -37,8 +37,10 @@ project(podofo_capi)
 cmake_minimum_required(VERSION 2.8)
 
 find_package(PythonInterp 3.4 REQUIRED)
+find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 
 add_definitions(-DPODOFO_HAVE_OPENSSL)
 
@@ -73,8 +75,12 @@ include_directories(
   ${PODOFO_INCLUDE_DIR}
   ${FREETYPE_INCLUDE_DIR}
   ${PNG_INCLUDE_DIR}
-  ${OPENSSL_INCLUDE_DIR}  
+  ${OPENSSL_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}/
+  ${boost_shared_ptr_SOURCE_DIR}/source/
 )
+
+add_subdirectory(examples)
 
 add_library(podofo_capi SHARED
   ${podofo_capi_SOURCE_DIR}/src/AutoGenWrap.cpp
